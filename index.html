@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>袁上恒 — 艺术与科技作品集 / 拼贴 × 半调 × 故障 × 赛博</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   作品集主页 · 拼贴美学 × 半调网点 × 噪点颗粒 × 故障 × 赛博
+   风格与 cover-h.html 封面统一；作品图片位置全部留空（占位框），
+   替换方法见底部 PROJECTS 数据区注释。
+   ============================================================ */
+:root {
+  --bg: #15151a;          /* 页面底色 */
+  --bg-soft: #1b1b21;     /* 卡片底色 */
+  --cream: #ece7dd;       /* 米白主字色 */
+  --ink-dim: #8b8880;     /* 次级灰 */
+  --red: #d03325;         /* 锐红 */
+  --cyan: #46e8dc;        /* 赛博青 */
+  --mag: #ff36b3;         /* 赛博品红 */
+  --line: rgba(236,231,221,.28);
+  --f-d: "Bodoni Moda", "Noto Serif SC", serif;
+  --f-c: "Noto Serif SC", "SimSun", serif;
+  --f-m: "IBM Plex Mono", Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { position: relative; background: var(--bg); color: var(--cream); font-family: var(--f-c); overflow-x: hidden; cursor: crosshair;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.45), 2px 2px 5px rgba(0,0,0,.28);   /* 全站文字浅浮雕 */
+}
+
+/* ---------- 氛围极光色斑（缓慢漂移的三色光晕） ---------- */
+.aurora { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+.aurora.c1 { width: 55vw; height: 55vw; left: -18vw; top: -22vh;
+  background: radial-gradient(circle, rgba(70,232,220,.13), transparent 65%);
+  animation: aur1 26s ease-in-out infinite alternate; }
+.aurora.c2 { width: 48vw; height: 48vw; right: -15vw; top: 28vh;
+  background: radial-gradient(circle, rgba(208,51,37,.11), transparent 65%);
+  animation: aur2 32s ease-in-out infinite alternate; }
+.aurora.c3 { width: 42vw; height: 42vw; left: 20vw; bottom: -20vh;
+  background: radial-gradient(circle, rgba(255,54,179,.08), transparent 65%);
+  animation: aur1 40s ease-in-out infinite alternate-reverse; }
+@keyframes aur1 { to { transform: translate(6vw, 9vh) scale(1.14); } }
+@keyframes aur2 { to { transform: translate(-8vw, -7vh) scale(1.08); } }
+
+/* ---------- 巨型描边水印字（分布在页面各处 · 鼠标视差） ---------- */
+.bg-word {
+  position: absolute; z-index: 0; pointer-events: none; user-select: none;
+  font-family: var(--f-d); font-weight: 900; font-style: italic; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1px rgba(236,231,221,.06);
+  white-space: nowrap;
+}
+::selection { background: var(--red); color: var(--cream); }
+img { display: block; }
+
+/* ============================================================
+   全局氛围背景层（fixed，滚动时始终在，避免背景单调）
+   ============================================================ */
+.atmo { position: fixed; inset: 0; pointer-events: none; }
+.atmo-grid {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 79px, rgba(236,231,221,.045) 79px 80px),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(236,231,221,.045) 79px 80px);
+}
+.atmo-noise {
+  z-index: 90; opacity: .12; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.atmo-scan {
+  z-index: 91; opacity: .5;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(236,231,221,.028) 3px 4px);
+}
+.atmo-beam { z-index: 92; overflow: hidden; }
+.atmo-beam::before {
+  content: ""; position: absolute; left: 0; right: 0; height: 150px;
+  background: linear-gradient(transparent, rgba(70,232,220,.08), rgba(255,54,179,.05), transparent);
+  animation: beam 9s linear infinite;
+}
+@keyframes beam { 0% { top: -25%; } 100% { top: 115%; } }
+
+/* 散落网点块（视差装饰） */
+.dots { position: fixed; pointer-events: none; z-index: 1; }
+.dots.red   { background-image: radial-gradient(circle, var(--red) 1.5px, transparent 1.6px); background-size: 9px 9px; }
+.dots.cyan  { background-image: radial-gradient(circle, var(--cyan) 1.3px, transparent 1.4px); background-size: 8px 8px; opacity: .4; }
+.dots.cream { background-image: radial-gradient(circle, var(--cream) 1.2px, transparent 1.3px); background-size: 7px 7px; opacity: .15; }
+
+/* 十字标记装饰 */
+.xmark { position: fixed; width: 18px; height: 18px; z-index: 1; opacity: .5; pointer-events: none; }
+.xmark::before, .xmark::after { content: ""; position: absolute; background: var(--cream); }
+.xmark::before { left: 50%; top: 0; width: 1px; height: 100%; }
+.xmark::after  { top: 50%; left: 0; height: 1px; width: 100%; }
+
+/* 侧边竖排常驻文字 */
+.vtext {
+  position: fixed; writing-mode: vertical-rl; z-index: 2;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 6px;
+  color: var(--ink-dim); opacity: .8; pointer-events: none;
+}
+.v-right { right: 18px; top: 50%; transform: translateY(-50%); }
+.v-left  { left: 18px; top: 50%; transform: translateY(-50%); }
+
+/* 巨型描边字（页尾背景） */
+.giant-foot {
+  position: absolute; right: -30px; bottom: -80px; z-index: 0;
+  font-family: var(--f-d); font-style: italic; font-weight: 900;
+  font-size: 380px; line-height: 1; color: transparent;
+  -webkit-text-stroke: 1px rgba(236,231,221,.1); user-select: none;
+}
+
+/* ============================================================
+   开场幕布 / 进度线 / 光标
+   ============================================================ */
+#boot {
+  position: fixed; inset: 0; z-index: 900; background: #0b0b0d;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 6px; color: var(--ink-dim);
+  transition: opacity .5s ease .35s, visibility .5s .35s;
+}
+#boot.off { opacity: 0; visibility: hidden; }
+#boot span::before { content: "▮ "; color: var(--red); animation: blink .8s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+#progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--red); z-index: 800; }
+.cursor-dot, .cursor-cross { position: fixed; top: 0; left: 0; z-index: 950; pointer-events: none; }
+.cursor-dot {
+  width: 10px; height: 10px; background: var(--red);
+  transition: width .25s, height .25s, background .25s;
+}
+.cursor-dot.big { width: 34px; height: 34px; background: transparent; border: 1.5px solid var(--red); }
+.cursor-cross { width: 34px; height: 34px; opacity: .45; transition: opacity .25s; }
+.cursor-cross::before, .cursor-cross::after { content: ""; position: absolute; background: var(--cream); }
+.cursor-cross::before { left: 50%; top: 0; width: 1px; height: 100%; }
+.cursor-cross::after  { top: 50%; left: 0; height: 1px; width: 100%; }
+
+/* ============================================================
+   顶部栏
+   ============================================================ */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 700;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 44px;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 3px;
+  background: linear-gradient(rgba(21,21,26,.92), rgba(21,21,26,0));
+}
+header b { color: var(--cream); font-weight: 500; }
+header .cy { color: var(--cyan); }
+header nav a {
+  color: var(--ink-dim); text-decoration: none; margin-left: 28px; position: relative;
+  transition: color .3s;
+}
+header nav a:hover { color: var(--cream); }
+header nav a::after {
+  content: ""; position: absolute; left: 0; bottom: -5px;
+  width: 0; height: 1px; background: var(--red); transition: width .3s;
+}
+header nav a:hover::after { width: 100%; }
+
+/* ============================================================
+   故障标题（RGB 分离）
+   ============================================================ */
+.g-title { position: relative; }
+.g-title::before, .g-title::after {
+  content: attr(data-t);
+  position: absolute; left: 0; top: 0; width: 100%;
+  opacity: 0; pointer-events: none;
+}
+.g-title::before { color: var(--cyan); }
+.g-title::after  { color: var(--mag); }
+body.burst .g-title { animation: tjit .45s steps(3); }
+body.burst .g-title::before { opacity: .85; animation: gsliceA .45s steps(2); }
+body.burst .g-title::after  { opacity: .8;  animation: gsliceB .45s steps(2); }
+@keyframes tjit {
+  0% { transform: none; }
+  33% { transform: translate(-7px, 3px) skewX(-2deg); }
+  66% { transform: translate(6px, -2px) skewX(1.6deg); }
+}
+@keyframes gsliceA {
+  0% { clip-path: inset(8% 0 76% 0); transform: translate(-9px, 0); }
+  50% { clip-path: inset(46% 0 34% 0); transform: translate(7px, 0); }
+  100% { clip-path: inset(70% 0 8% 0); transform: translate(-5px, 0); }
+}
+@keyframes gsliceB {
+  0% { clip-path: inset(60% 0 18% 0); transform: translate(9px, 0); }
+  50% { clip-path: inset(22% 0 60% 0); transform: translate(-8px, 0); }
+  100% { clip-path: inset(4% 0 84% 0); transform: translate(5px, 0); }
+}
+
+/* 选取框 + 四角手柄 */
+.selbox { position: relative; }
+.selbox::before { content: ""; position: absolute; inset: 0; border: 1px solid rgba(236,231,221,.75); z-index: 4; pointer-events: none; }
+.selbox i {
+  position: absolute; width: 8px; height: 8px; z-index: 5;
+  background: var(--bg); border: 1px solid var(--cream);
+}
+.selbox .tl { top: -4px; left: -4px; } .selbox .tr { top: -4px; right: -4px; }
+.selbox .bl { bottom: -4px; left: -4px; } .selbox .br { bottom: -4px; right: -4px; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero { position: relative; padding: 140px 90px 48px; }
+.hero-inner { position: relative; max-width: 1340px; margin: 0 auto; }
+.hero-index { font-family: var(--f-m); font-size: 12px; letter-spacing: 3px; color: var(--ink-dim); margin-bottom: 26px; }
+.hero-index b { color: var(--red); font-weight: 500; }
+.hero-title {
+  font-family: var(--f-d); font-weight: 900;
+  font-size: clamp(72px, 10.5vw, 190px);
+  line-height: .9; letter-spacing: -.015em; text-transform: uppercase;
+  -webkit-text-stroke: .6px currentColor;   /* 轻微加粗笔画 */
+  /* 3D 挤出：阶梯式阴影层层后退 + 边缘青/红信号色 + 底部投影 */
+  text-shadow:
+    1.5px 0 0 rgba(70,232,220,.35),
+    -1.5px 0 0 rgba(208,51,37,.35),
+    3px 3px 0 rgba(0,0,0,.55),
+    6px 6px 0 rgba(11,11,13,.5),
+    9px 9px 0 rgba(11,11,13,.44),
+    12px 12px 0 rgba(11,11,13,.38),
+    15px 15px 0 rgba(11,11,13,.3),
+    18px 18px 0 rgba(11,11,13,.24),
+    21px 21px 0 rgba(11,11,13,.18),
+    24px 24px 38px rgba(0,0,0,.6);
+}
+/* 区块大标题：中等立体挤出 */
+.g-title, .contact .big, .about-statement {
+  text-shadow:
+    1px 0 0 rgba(70,232,220,.3),
+    -1px 0 0 rgba(208,51,37,.3),
+    2px 2px 0 rgba(0,0,0,.5),
+    4px 4px 0 rgba(11,11,13,.42),
+    6px 6px 0 rgba(11,11,13,.34),
+    8px 8px 0 rgba(11,11,13,.26),
+    10px 10px 16px rgba(0,0,0,.5);
+}
+.hero-title .row2 { display: flex; align-items: baseline; gap: .15em; }
+.hero-title .star { color: var(--red); }
+.hero-title .italic { font-style: italic; font-weight: 400; color: var(--cyan); -webkit-text-stroke: .9px var(--cyan); }
+.hero-sub {
+  margin-top: 34px; display: flex; align-items: center; gap: 18px;
+  font-family: var(--f-m); font-size: 13px; letter-spacing: 4px; color: var(--ink-dim);
+}
+.hero-sub::before { content: ""; width: 64px; height: 1px; background: var(--red); }
+
+/* 主视觉图层 */
+.hero-visual {
+  position: absolute; right: 0; top: 44%;
+  width: min(38vw, 520px); transform: translateY(-50%); z-index: -1;
+}
+.hero-visual img { width: 100%; mix-blend-mode: screen; opacity: .9; }
+.hero-visual .dots { inset: 0; mix-blend-mode: overlay; opacity: .3; }
+
+/* 散落标签 */
+.tag {
+  position: absolute; z-index: 3;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 3px;
+  background: var(--bg); color: var(--cream);
+  border: 1px solid var(--line); padding: 5px 12px; white-space: nowrap;
+}
+.tag.red { background: var(--red); border-color: var(--red); }
+.tag.cy { border-color: var(--cyan); color: var(--cyan); }
+
+/* 年份 + 状态 */
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 62px; }
+.hero-year {
+  font-family: var(--f-d); font-style: italic; font-weight: 900;
+  font-size: clamp(60px, 7vw, 110px); line-height: 1;
+}
+.hero-year small {
+  display: block; font-family: var(--f-m); font-style: normal;
+  font-size: 11px; letter-spacing: 3px; color: var(--ink-dim); margin-top: 12px;
+}
+.term {
+  font-family: var(--f-m); font-size: 10.5px; letter-spacing: 1.5px;
+  line-height: 2; color: var(--cyan); opacity: .85;
+}
+.term::before { content: "▮"; animation: blink 1s steps(2) infinite; }
+
+/* 跑马灯 */
+.marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; overflow: hidden; margin-top: 46px; }
+.marquee-track { display: flex; width: max-content; animation: marquee 24s linear infinite; }
+.marquee-track span {
+  font-family: var(--f-d); font-size: 24px; letter-spacing: .06em;
+  white-space: nowrap; padding-right: 48px; text-transform: uppercase;
+}
+.marquee-track em { color: var(--red); font-style: italic; }
+.marquee-track .cy { color: var(--cyan); font-style: normal; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ============================================================
+   区块通用
+   ============================================================ */
+section { position: relative; padding: 130px 90px; z-index: 3; }
+.sec-head { max-width: 1340px; margin: 0 auto 48px; display: flex; align-items: flex-end; gap: 28px; flex-wrap: wrap; }
+.sec-head .no { font-family: var(--f-m); font-size: 13px; letter-spacing: 3px; color: var(--red); }
+.sec-head h2 {
+  font-family: var(--f-d); font-weight: 900;
+  font-size: clamp(44px, 6vw, 92px); line-height: 1; text-transform: uppercase;
+}
+.sec-head .zh { font-family: var(--f-m); font-size: 12px; letter-spacing: 4px; color: var(--ink-dim); padding-bottom: 10px; }
+
+/* ============================================================
+   3D 旋转作品环（旋转木马）
+   ============================================================ */
+.car-wrap { max-width: 1340px; margin: 0 auto; }
+.car-stage {
+  position: relative; height: 620px; margin-top: -52px;
+  perspective: 1500px; cursor: grab; user-select: none;
+}
+.car-stage.dragging { cursor: grabbing; }
+.car-ring { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.car-floor { position: absolute; left: 50%; top: 78%; width: 900px; height: 200px; transform: translateX(-50%); pointer-events: none; }
+.car-floor::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(208,51,37,.14), transparent 65%);
+}
+.car-floor i {
+  position: absolute; left: 50%; top: 50%; border: 1px dashed rgba(236,231,221,.16); border-radius: 50%;
+}
+.car-floor i:nth-child(1) { width: 880px; height: 190px; margin: -95px 0 0 -440px; animation: floorSpin 26s linear infinite; }
+.car-floor i:nth-child(2) { width: 660px; height: 142px; margin: -71px 0 0 -330px; animation: floorSpin 18s linear infinite reverse; }
+.car-floor i:nth-child(3) { width: 430px; height: 92px;  margin: -46px 0 0 -215px; opacity: .5; }
+@keyframes floorSpin { to { transform: rotate(360deg); } }
+
+.car-card {
+  position: absolute; left: 50%; top: 44%;
+  width: 400px; height: 330px; margin: -165px 0 0 -200px;
+  transform-style: preserve-3d;
+  transition: filter .35s, opacity .35s;
+  cursor: pointer;
+}
+.car-card.is-front { filter: saturate(1.28) contrast(1.12); cursor: zoom-in; }
+/* 悬停光泽扫过 + 青色辉光 */
+.car-card::after {
+  content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none;
+  mix-blend-mode: screen; transform: translateX(-130%);
+  background: linear-gradient(115deg, transparent 32%, rgba(70,232,220,.15) 44%,
+    rgba(236,231,221,.24) 50%, rgba(70,232,220,.15) 56%, transparent 68%);
+  transition: transform .75s ease;
+}
+.car-card:hover::after { transform: translateX(130%); }
+.car-card:hover { filter: saturate(1.35) contrast(1.15) brightness(1.08); }
+.car-card.is-front:hover .ph-frame { box-shadow: 0 0 42px rgba(70,232,220,.4), 0 30px 60px rgba(0,0,0,.55); }
+/* 背面卡片：可见但不抢视觉 */
+.car-card.is-back { filter: brightness(.22) saturate(.5); opacity: .75; }
+.car-card .ph-frame { aspect-ratio: auto; height: 100%; background: var(--bg-soft); }
+.car-card .ph-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.car-card .wno { z-index: 4; }
+.car-card.is-front .ph-frame { border-color: var(--red); box-shadow: 0 0 46px rgba(208,51,37,.28), 0 30px 60px rgba(0,0,0,.55); }
+.car-card .car-go {
+  position: absolute; inset: auto 14px 14px auto; z-index: 5;
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 3px;
+  color: var(--cream); background: rgba(11,11,13,.78); border: 1px solid var(--line);
+  padding: 6px 12px; opacity: 0; transition: opacity .3s;
+}
+.car-card.is-front .car-go { opacity: 1; }
+.car-card.is-front .car-go:hover { background: var(--red); border-color: var(--red); }
+
+/* 正面作品信息条 */
+.car-cap {
+  display: flex; align-items: center; gap: 28px;
+  border: 1px solid var(--line); border-left: 4px solid var(--red);
+  padding: 24px 30px; margin-top: 72px;
+  background: linear-gradient(90deg, rgba(208,51,37,.08), transparent 45%);
+}
+.car-no { font-family: var(--f-d); font-style: italic; font-weight: 900; font-size: 84px; color: var(--red); line-height: .9; }
+.car-t b { display: block; font-family: var(--f-d); font-weight: 900; font-size: 30px; text-transform: uppercase; letter-spacing: .02em; line-height: 1.05; }
+.car-t span { display: block; margin-top: 10px; font-family: var(--f-m); font-size: 13px; letter-spacing: 3px; color: var(--ink-dim); }
+.car-cap .btn { margin-left: auto; flex: none; }
+.car-hint {
+  margin-top: 14px; text-align: center;
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 3px; color: var(--ink-dim);
+}
+.car-hint b { color: var(--cyan); font-weight: 500; }
+
+/* ---------- 二维×三维景深空间 ---------- */
+.car-tilt { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.car-deep { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; }
+.car-gridwall {
+  position: absolute; left: -35%; top: -25%; width: 170%; height: 160%;
+  transform: translateZ(-820px);
+  background:
+    repeating-linear-gradient(0deg, rgba(236,231,221,.07) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(90deg, rgba(236,231,221,.07) 0 1px, transparent 1px 72px);
+}
+.car-word {
+  position: absolute; left: 50%; top: 42%;
+  transform: translate(-50%, -50%) translateZ(-660px);
+  font-family: var(--f-d); font-weight: 900; font-size: 215px; letter-spacing: .02em;
+  color: transparent; -webkit-text-stroke: 1px rgba(236,231,221,.10);
+  white-space: nowrap;
+}
+.car-word i {
+  position: absolute; left: 7px; top: 7px; font-style: normal;
+  -webkit-text-stroke: 1px rgba(208,51,37,.17);
+}
+.car-deb { position: absolute; transform: translateZ(var(--z, -400px)); will-change: transform; }
+.car-deb i {
+  display: inline-block; font-style: normal;
+  animation: debFloat var(--d, 7s) ease-in-out infinite alternate;
+}
+@keyframes debFloat {
+  from { transform: translateY(-14px) rotate(-5deg); }
+  to   { transform: translateY(14px) rotate(6deg); }
+}
+.car-deb.cy   { color: var(--cyan); text-shadow: 0 0 14px rgba(70,232,220,.5); }
+.car-deb.red  { color: var(--red);  text-shadow: 0 0 14px rgba(208,51,37,.55); }
+.car-deb.dim  { color: transparent; -webkit-text-stroke: 1px rgba(236,231,221,.4); text-shadow: none; }
+
+/* ---------- 卡片拼贴特效层 ---------- */
+.car-card .ph-frame .tint { opacity: .35; }
+.car-card .ph-frame img { filter: saturate(1.2) contrast(1.08); }
+/* RGB 分离幽灵层 */
+.fx-g {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none; z-index: 2;
+  mix-blend-mode: screen; opacity: .16; transition: opacity .35s;
+}
+.fx-g.g1 { filter: brightness(1.1) sepia(1) saturate(9) hue-rotate(125deg); transform: translateX(-5px); }
+.fx-g.g2 { filter: brightness(1.1) sepia(1) saturate(9) hue-rotate(-65deg); transform: translateX(5px); }
+.car-card.is-front .fx-g { opacity: .5; }
+.car-card.is-front .fx-g.g1 { animation: gShift 1.9s steps(3) infinite; }
+.car-card.is-front .fx-g.g2 { animation: gShift 1.9s steps(3) infinite reverse; }
+@keyframes gShift {
+  0%, 100% { transform: translateX(-7px) translateY(0); }
+  50%      { transform: translateX(-3px) translateY(-2px); }
+}
+/* 巨型描边编号 */
+.fx-no {
+  position: absolute; right: -8px; top: -52px; z-index: 3;
+  font-family: var(--f-d); font-style: italic; font-weight: 900; font-size: 112px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1px rgba(236,231,221,.35);
+  pointer-events: none;
+}
+.car-card.is-front .fx-no { -webkit-text-stroke-color: rgba(208,51,37,.65); }
+/* 拼贴胶带 */
+.fx-tape {
+  position: absolute; width: 96px; height: 26px; z-index: 4;
+  background: rgba(236,231,221,.2);
+  border-left: 1px dashed rgba(236,231,221,.4); border-right: 1px dashed rgba(236,231,221,.4);
+  pointer-events: none;
+}
+.fx-tape.t1 { left: -34px; top: 34%; transform: rotate(-8deg); }
+.fx-tape.t2 { right: -30px; bottom: 26%; transform: rotate(6deg); }
+.car-card.is-front .fx-tape { background: rgba(70,232,220,.28); }
+/* 半调网点 */
+.fx-dots {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(208,51,37,.5) 1.1px, transparent 1.2px);
+  background-size: 9px 9px; mix-blend-mode: overlay; opacity: .3;
+}
+/* 扫描故障条（正面时循环扫过） */
+.fx-bar {
+  position: absolute; left: 0; top: 30%; width: 100%; height: 12px; z-index: 5;
+  background: var(--cyan); mix-blend-mode: exclusion; opacity: 0; pointer-events: none;
+}
+.car-card.is-front .fx-bar { animation: fxSweep 2.4s steps(4) infinite; }
+@keyframes fxSweep {
+  0%   { opacity: .9; transform: translateY(0) scaleX(1.02); }
+  60%  { opacity: .5; transform: translateY(150px) scaleX(.96); }
+  100% { opacity: 0; transform: translateY(230px) scaleX(1.05); }
+}
+/* 左下角档案标签 */
+.fx-tag {
+  position: absolute; left: 12px; bottom: 12px; z-index: 5;
+  font-family: var(--f-m); font-size: 9px; letter-spacing: 3px;
+  color: var(--cyan); border: 1px solid rgba(70,232,220,.55);
+  background: rgba(11,11,13,.7); padding: 4px 10px;
+}
+
+/* ============================================================
+   作品卡片（图片位置留空）
+   ============================================================ */
+.works-list { max-width: 1340px; margin: 0 auto; display: flex; flex-direction: column; gap: 120px; }
+.work { display: grid; grid-template-columns: 7fr 5fr; gap: 60px; align-items: end; }
+.work:nth-child(even) { direction: rtl; }
+.work:nth-child(even) > * { direction: ltr; }
+
+/* 占位图框：待替换的作品图位置 */
+.ph-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 26px, rgba(236,231,221,.05) 26px 27px),
+    repeating-linear-gradient(-45deg, transparent 0 26px, rgba(236,231,221,.05) 26px 27px),
+    var(--bg-soft);
+  overflow: hidden;
+  transition: background .4s;
+}
+.ph-frame .ph-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(236,231,221,.16) 1.2px, transparent 1.3px);
+  background-size: 8px 8px;
+  transition: opacity .4s;
+}
+.ph-frame .ph-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; z-index: 3;
+  font-family: var(--f-m); letter-spacing: 3px; color: var(--ink-dim);
+}
+.ph-frame .ph-center b { font-size: 13px; color: var(--cream); font-weight: 500; }
+.ph-frame .ph-center .big-no {
+  font-family: var(--f-d); font-style: italic; font-size: 90px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1px rgba(236,231,221,.35);
+}
+.ph-frame .ph-corner { position: absolute; font-family: var(--f-m); font-size: 10px; letter-spacing: 2px; color: var(--ink-dim); z-index: 3; }
+.ph-frame .c-tl { top: 14px; left: 16px; }
+.ph-frame .c-br { bottom: 14px; right: 16px; color: var(--cyan); }
+
+/* 已放置图片时的样式（替换 img 后自动应用） */
+.ph-frame img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.12); transition: transform .8s cubic-bezier(.22,1,.36,1), filter .8s; }
+.work:hover .ph-frame img { transform: scale(1.05); filter: grayscale(.15) contrast(1.15); }
+
+/* 悬停红罩 + 故障条（占位与图片都生效） */
+.ph-frame .tint {
+  position: absolute; inset: 0; background: var(--red);
+  mix-blend-mode: multiply; opacity: 0; transition: opacity .45s; z-index: 2;
+}
+.work:hover .ph-frame .tint { opacity: .5; }
+.ph-frame .glitch-bar {
+  position: absolute; left: 0; width: 100%; height: 12%;
+  background: var(--red); mix-blend-mode: multiply; opacity: 0; top: 30%; z-index: 2;
+}
+.work:hover .ph-frame .glitch-bar { animation: bar .7s steps(6) 1; }
+@keyframes bar {
+  0% { opacity: .8; top: 10%; } 25% { top: 42%; } 50% { opacity: .5; top: 63%; }
+  75% { top: 26%; } 100% { opacity: 0; top: 85%; }
+}
+
+.wno {
+  position: absolute; top: 16px; right: 18px; z-index: 4;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 3px;
+  color: var(--cream); mix-blend-mode: difference;
+}
+
+.work-info { padding-bottom: 6px; }
+.work-info .meta { font-family: var(--f-m); font-size: 12px; letter-spacing: 3px; color: var(--ink-dim); margin-bottom: 16px; display: flex; gap: 14px; }
+.work-info .meta b { color: var(--red); font-weight: 500; }
+.work-info h3 { font-family: var(--f-d); font-size: clamp(30px, 3.6vw, 54px); line-height: 1.1; font-weight: 900; }
+.work-info h3 .zh { display: block; font-size: .6em; font-weight: 600; color: var(--ink-dim); margin-top: 8px; }
+.work-info p { margin-top: 18px; max-width: 40ch; font-size: 14px; line-height: 2; color: var(--ink-dim); }
+.work-info .more {
+  margin-top: 22px; display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 3px;
+  color: var(--cream); border: 1px solid var(--cream);
+  padding: 12px 22px; background: transparent; transition: background .3s, color .3s, border-color .3s;
+}
+.work-info .more:hover { background: var(--red); border-color: var(--red); color: var(--cream); }
+
+/* 滚动入场 */
+.reveal { opacity: 0; transform: translateY(46px); transition: opacity .9s ease, transform .9s cubic-bezier(.22,1,.36,1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ============================================================
+   关于
+   ============================================================ */
+#about { background: linear-gradient(rgba(27,27,33,.6), rgba(27,27,33,.6)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.about-wrap { max-width: 1340px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 80px; align-items: start; }
+.about-statement { font-family: var(--f-d); font-size: clamp(24px, 3vw, 40px); line-height: 1.5; font-weight: 600; }
+.about-statement em { color: var(--red); font-style: italic; }
+.about-statement .cy { color: var(--cyan); font-style: normal; }
+.about-detail { margin-top: 46px; font-size: 15px; line-height: 2.2; color: var(--ink-dim); max-width: 62ch; }
+.about-side { display: flex; gap: 30px; justify-content: flex-end; }
+.about-side .redbox {
+  background: var(--red); color: var(--cream); padding: 26px 22px; width: 150px;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 2px; line-height: 2;
+}
+.vertical-note {
+  writing-mode: vertical-rl; font-family: var(--f-m); font-size: 12px;
+  letter-spacing: 6px; color: var(--ink-dim); height: 300px; opacity: .8;
+}
+.skills { margin-top: 60px; display: flex; flex-wrap: wrap; gap: 14px; }
+.skills span { font-family: var(--f-m); font-size: 12px; letter-spacing: 2px; border: 1px solid var(--line); padding: 10px 18px; color: var(--cream); }
+.skills span.hot { background: var(--cyan); border-color: var(--cyan); color: var(--bg); }
+
+/* ============================================================
+   联系 / 页脚
+   ============================================================ */
+.contact { text-align: center; }
+.contact .kicker { font-family: var(--f-m); font-size: 12px; letter-spacing: 4px; color: var(--ink-dim); margin-bottom: 26px; }
+.contact .big { font-family: var(--f-d); font-weight: 900; font-size: clamp(56px, 9vw, 140px); line-height: .95; text-transform: uppercase; }
+.contact .big em { font-style: italic; font-weight: 400; color: var(--red); }
+.contact .mail {
+  margin-top: 40px; display: inline-block;
+  font-family: var(--f-m); font-size: clamp(14px, 2vw, 19px); letter-spacing: 3px;
+  color: var(--cream); text-decoration: none; border-bottom: 2px solid var(--red); padding-bottom: 8px;
+}
+footer {
+  max-width: 1340px; margin: 100px auto 0; padding-top: 26px; border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 2px; color: var(--ink-dim);
+}
+
+/* ============================================================
+   详情弹层
+   ============================================================ */
+#detail {
+  position: fixed; inset: 0; z-index: 6000; background: var(--bg);
+  display: none; overflow-y: auto; padding: 110px 90px 70px;
+}
+#detail.open { display: block; animation: detailIn .5s cubic-bezier(.22,1,.36,1); }
+@keyframes detailIn {
+  0% { transform: translateY(3%) skewY(.6deg); opacity: 0; filter: blur(4px); }
+  100% { transform: none; opacity: 1; filter: none; }
+}
+.detail-inner { max-width: 1080px; margin: 0 auto; }
+/* ---------- 作品专属封面 ---------- */
+.d-cover { position: relative; margin-bottom: 80px; padding-top: 26px; }
+.d-reg { position: absolute; width: 24px; height: 24px; z-index: 5; }
+.d-reg::before, .d-reg::after { content: ""; position: absolute; background: rgba(236,231,221,.45); }
+.d-reg::before { left: 50%; top: -2px; width: 1px; height: 28px; }
+.d-reg::after { top: 50%; left: -2px; height: 1px; width: 28px; }
+.d-reg.tl { left: -40px; top: 0; } .d-reg.tr { right: -40px; top: 0; }
+.d-reg.bl { left: -40px; bottom: -10px; } .d-reg.br { right: -40px; bottom: -10px; }
+.d-giant {
+  position: absolute; right: -10px; top: -90px; z-index: 0;
+  font-family: var(--f-d); font-style: italic; font-weight: 900;
+  font-size: 300px; line-height: 1; color: transparent;
+  -webkit-text-stroke: 1px rgba(236,231,221,.12);
+  user-select: none; pointer-events: none;
+}
+.d-cover-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: start; }
+.d-left { padding-top: 46px; }
+.d-title { font-family: var(--f-d); font-weight: 900; font-size: clamp(42px, 4.6vw, 72px); line-height: .95; text-transform: uppercase; }
+.d-sub {
+  margin-top: 20px; display: flex; align-items: center; gap: 14px;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 4px; color: var(--cream);
+}
+.d-sub::before { content: ""; width: 48px; height: 1px; background: var(--red); flex: none; }
+.d-meta { margin-bottom: 26px; font-family: var(--f-m); font-size: 11px; letter-spacing: 3px; color: var(--ink-dim); }
+.d-meta b { color: var(--red); font-weight: 500; }
+.d-term {
+  margin-top: 34px; font-family: var(--f-m); font-size: 10.5px; letter-spacing: 1.5px;
+  line-height: 2; color: var(--cyan); opacity: .85;
+}
+.d-term::before { content: "▮"; animation: blink 1s steps(2) infinite; }
+.d-visual-wrap { position: relative; }
+.d-redoffset { position: absolute; inset: 26px -26px -26px 26px; background: var(--red); }
+.d-visual {
+  position: relative; z-index: 1; margin: 0; aspect-ratio: 4 / 5; overflow: hidden;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 26px, rgba(236,231,221,.05) 26px 27px),
+    var(--bg-soft);
+}
+.d-visual img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.35) contrast(1.12); transition: filter .4s; }
+.d-visual:hover img { filter: grayscale(0) saturate(1.3) contrast(1.12); }
+.d-visual .ph-dots { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(236,231,221,.16) 1.2px, transparent 1.3px); background-size: 8px 8px; }
+.d-visual .ph-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-m); font-size: 13px; letter-spacing: 4px; color: var(--ink-dim); z-index: 3; text-align: center; padding: 0 20px;
+}
+.d-visual .dots.red { mix-blend-mode: multiply; }
+.d-visual .strip { position: absolute; left: 0; height: 10px; width: 70%; mix-blend-mode: exclusion; opacity: 0; pointer-events: none; z-index: 6; }
+.d-visual .strip.s1 { background: var(--cyan); }
+.d-visual .strip.s2 { background: var(--cream); height: 6px; }
+.d-visual .strip.s3 { background: var(--mag); height: 14px; }
+body.burst .d-visual .strip { animation: stripMoveD .45s steps(5) forwards; }
+@keyframes stripMoveD {
+  0% { opacity: .95; transform: translateX(-40px) scaleX(.7); }
+  50% { transform: translateX(24px) scaleX(1.05); }
+  100% { opacity: 0; transform: translateX(70px) scaleX(.8); }
+}
+body.burst .d-visual img { animation: dIjit .45s steps(4); }
+@keyframes dIjit {
+  0% { transform: none; filter: none; }
+  30% { transform: translateX(-9px); filter: hue-rotate(40deg) saturate(2); }
+  65% { transform: translateX(7px) scaleY(1.01); filter: hue-rotate(-30deg); }
+}
+.detail-desc { max-width: 640px; margin: 52px 0 60px; }
+.detail-desc .label {
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 4px;
+  color: var(--ink-dim); display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+}
+.detail-desc .label::after { content: ""; width: 48px; height: 1px; background: var(--red); }
+.detail-desc p { font-size: 16px; line-height: 2.1; }
+.detail-nav { display: flex; gap: 18px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 36px; }
+.btn {
+  appearance: none; background: transparent; border: 1px solid var(--cream); color: var(--cream);
+  font-family: var(--f-m); font-size: 13px; letter-spacing: 3px;
+  padding: 16px 30px; transition: background .3s, color .3s, border-color .3s;
+}
+.btn:hover { background: var(--cream); color: var(--bg); }
+.btn.red { border-color: var(--red); color: var(--red); }
+.btn.red:hover { background: var(--red); color: var(--cream); }
+#detail .close {
+  position: fixed; top: 26px; right: 44px; z-index: 6010;
+  width: 52px; height: 52px; background: var(--red); border: none; color: var(--cream);
+  font-size: 26px; line-height: 1; font-family: var(--f-m); transition: transform .3s;
+}
+#detail .close:hover { transform: rotate(90deg); }
+
+/* ============================================================
+   详情页媒体区：图集 / 视频 / 交互演示 / 信息表
+   ============================================================ */
+.media-sec { margin-top: 56px; }
+.media-sec .m-label {
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 4px;
+  color: var(--ink-dim); display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+}
+.media-sec .m-label::after { content: ""; width: 48px; height: 1px; background: var(--cyan); }
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.gallery figure {
+  position: relative; overflow: hidden; margin: 0;
+  aspect-ratio: 4 / 3; background: var(--bg-soft);
+  border: 1px solid var(--line);
+}
+.gallery img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(.35) contrast(1.08);
+  transition: filter .4s, transform .5s;
+}
+.gallery figure:hover img { filter: grayscale(0) contrast(1.1); transform: scale(1.04); }
+.gallery figcaption {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  padding: 20px 12px 10px;
+  background: linear-gradient(transparent, rgba(11,11,13,.88));
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 2px; color: var(--cream);
+}
+/* 展板：整行通栏，按原比例展示 */
+.gallery .wide { grid-column: 1 / -1; aspect-ratio: auto; display: flex; align-items: center; justify-content: center; padding: 30px; }
+.gallery .wide img { height: auto; max-height: 860px; width: auto; max-width: 100%; object-fit: contain; filter: none; }
+.gallery .wide:hover img { transform: none; filter: none; }
+
+.video-wrap { position: relative; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); }
+.video-wrap video { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.demo-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+.demo-row .demo-note { font-family: var(--f-m); font-size: 11px; letter-spacing: 2px; color: var(--ink-dim); }
+.btn.cy { border-color: var(--cyan); color: var(--cyan); }
+.btn.cy:hover { background: var(--cyan); color: var(--bg); }
+
+.info-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line); margin-top: 50px;
+}
+.info-grid div { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.info-grid div:nth-child(odd) { border-right: 1px solid var(--line); }
+.info-grid div:nth-last-child(-n+2) { border-bottom: none; }
+.info-grid .k { font-family: var(--f-m); font-size: 10px; letter-spacing: 3px; color: var(--red); margin-bottom: 8px; }
+.info-grid .v { font-family: var(--f-m); font-size: 12px; letter-spacing: 1px; line-height: 1.9; color: var(--cream); }
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 900px) {
+  header { padding: 16px 20px; }
+  section, .hero { padding-left: 20px; padding-right: 20px; }
+  .hero-visual { position: relative; right: auto; top: auto; transform: none; width: 100%; margin-top: 44px; z-index: 0; }
+  .work, .work:nth-child(even) { grid-template-columns: 1fr; direction: ltr; gap: 24px; }
+  .gallery { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  .info-grid div:nth-child(odd) { border-right: none; }
+  .info-grid div { border-bottom: 1px solid var(--line); }
+  .info-grid div:nth-last-child(1) { border-bottom: none; }
+  .about-wrap { grid-template-columns: 1fr; }
+  .vertical-note, .vtext { display: none; }
+  #detail { padding: 90px 20px 60px; }
+  #detail .close { right: 20px; }
+  .car-stage { height: 460px; perspective: 1000px; }
+  .car-card { width: 270px; height: 230px; margin: -115px 0 0 -135px; }
+  .car-floor { width: 560px; height: 130px; top: 82%; }
+  .car-floor i:nth-child(1) { width: 540px; height: 120px; margin: -60px 0 0 -270px; }
+  .car-floor i:nth-child(2) { width: 400px; height: 90px; margin: -45px 0 0 -200px; }
+  .car-floor i:nth-child(3) { width: 260px; height: 58px; margin: -29px 0 0 -130px; }
+  .car-cap { flex-wrap: wrap; gap: 14px; }
+  .car-cap .btn { margin-left: 0; width: 100%; text-align: center; }
+  .d-cover-grid { grid-template-columns: 1fr; gap: 34px; }
+  .d-left { padding-top: 0; }
+  .d-giant { font-size: 150px; top: -50px; right: 0; }
+  .d-redoffset { inset: 16px -14px -14px 16px; }
+  .d-reg { display: none; }
+}
+/* ============================================================
+   全局赛博特效层
+   ============================================================ */
+#fx-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .6; }
+#fx-rain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .9; }
+.fx-scanbeam {
+  position: fixed; left: 0; top: -8vh; width: 100%; height: 6vh; z-index: 800; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(70,232,220,.05) 45%, rgba(70,232,220,.15) 52%, transparent);
+  animation: beamMove 9s linear infinite;
+}
+@keyframes beamMove { to { transform: translateY(116vh); } }
+.hud-corner { position: fixed; width: 34px; height: 34px; z-index: 850; pointer-events: none; opacity: .65; }
+.hud-corner::before, .hud-corner::after { content: ""; position: absolute; background: var(--cyan); }
+.hud-corner::before { width: 100%; height: 1px; }
+.hud-corner::after { width: 1px; height: 100%; }
+.hud-corner.tl { left: 14px; top: 14px; } .hud-corner.tl::before { left: 0; top: 0; } .hud-corner.tl::after { left: 0; top: 0; }
+.hud-corner.tr { right: 14px; top: 14px; } .hud-corner.tr::before { right: 0; top: 0; } .hud-corner.tr::after { right: 0; top: 0; }
+.hud-corner.bl { left: 14px; bottom: 14px; } .hud-corner.bl::before { left: 0; bottom: 0; } .hud-corner.bl::after { left: 0; bottom: 0; }
+.hud-corner.br { right: 14px; bottom: 14px; } .hud-corner.br::before { right: 0; bottom: 0; } .hud-corner.br::after { right: 0; bottom: 0; }
+#hud-read {
+  position: fixed; right: 16px; bottom: 16px; z-index: 850; pointer-events: none;
+  font-family: var(--f-m); font-size: 9px; letter-spacing: 2px;
+  color: rgba(70,232,220,.6); text-align: right; line-height: 1.9;
+}
+#cursor-ring {
+  position: fixed; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; z-index: 900;
+  pointer-events: none; border: 1px solid rgba(70,232,220,.8); border-radius: 50%;
+  mix-blend-mode: screen;
+  box-shadow: 0 0 16px rgba(70,232,220,.5), inset 0 0 10px rgba(70,232,220,.3);
+  transition: width .2s, height .2s, margin .2s, border-color .2s, opacity .3s;
+}
+#cursor-ring::before {
+  content: ""; position: absolute; inset: -8px;
+  border: 1px dashed rgba(70,232,220,.55); border-radius: 50%;
+  animation: curSpin 3.2s linear infinite;
+}
+#cursor-ring::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px;
+  background: var(--red); border-radius: 50%;
+  box-shadow: 0 0 10px rgba(208,51,37,.9);
+}
+#cursor-ring.big {
+  width: 58px; height: 58px; margin: -29px 0 0 -29px; border-color: rgba(208,51,37,.85);
+  box-shadow: 0 0 24px rgba(208,51,37,.55), inset 0 0 14px rgba(208,51,37,.3);
+}
+#cursor-ring.big::before { animation-duration: 1.1s; border-color: rgba(208,51,37,.65); }
+/* 光标环机械故障抽搐 */
+#cursor-ring.glitching { animation: ringG .19s steps(3) 2; }
+@keyframes ringG {
+  33% { clip-path: inset(12% 0 42% 0); translate: -5px 3px; }
+  66% { clip-path: inset(48% 0 14% 0); translate: 4px -4px; }
+}
+/* 光标周围的故障碎屑 */
+.glitch-bit { position: fixed; z-index: 895; pointer-events: none; mix-blend-mode: screen; }
+.glitch-bit.slice {
+  height: 3px; background: var(--cyan);
+  box-shadow: 0 0 9px rgba(70,232,220,.85);
+  animation: gbitA .22s steps(3) forwards;
+}
+.glitch-bit.slice.red { background: var(--red); box-shadow: 0 0 9px rgba(208,51,37,.85); }
+.glitch-bit.slice.white { background: var(--cream); box-shadow: 0 0 7px rgba(236,231,221,.7); }
+.glitch-bit.noise {
+  width: 46px; height: 30px;
+  background:
+    repeating-linear-gradient(0deg, rgba(70,232,220,.5) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(90deg, rgba(208,51,37,.4) 0 3px, transparent 3px 6px);
+  animation: gbitN .3s steps(4) forwards;
+}
+@keyframes gbitA {
+  0% { opacity: .95; translate: 0 0; }
+  40% { opacity: .5; translate: -5px 0; }
+  100% { opacity: 0; translate: 7px 0; }
+}
+@keyframes gbitN {
+  0% { opacity: .85; clip-path: inset(0 0 42% 0); }
+  50% { opacity: .5; clip-path: inset(28% 0 12% 0); }
+  100% { opacity: 0; clip-path: inset(58% 0 0 0); }
+}
+@keyframes curSpin { to { transform: rotate(360deg); } }
+.cursor-trail {
+  position: fixed; z-index: 890; pointer-events: none; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 10px rgba(70,232,220,.9);
+  animation: trailA .5s ease-out forwards;
+}
+.cursor-trail.red { background: var(--red); box-shadow: 0 0 10px rgba(208,51,37,.9); }
+@keyframes trailA { from { opacity: .75; transform: scale(1); } to { opacity: 0; transform: scale(.15); } }
+@media (hover: none) { #cursor-ring, #hud-read { display: none; } }
+#fx-flick { position: fixed; inset: 0; z-index: 790; pointer-events: none; background: rgba(208,51,37,.06); opacity: 0; }
+body.flick #fx-flick { animation: flickA .18s steps(3) 1; }
+@keyframes flickA { 0% { opacity: .8; } 50% { opacity: .25; } 100% { opacity: 0; } }
+body.flick section, body.flick .hero { animation: skewA .18s steps(2) 1; }
+@keyframes skewA { 50% { transform: skewX(.6deg) translateX(3px); } }
+.hero-title { animation: tJit 8s steps(1) infinite; }
+@keyframes tJit {
+  0%, 95%, 100% { transform: none; }
+  96% { transform: translateX(-4px) skewX(-1.2deg); }
+  97% { transform: translateX(3px); }
+  98% { transform: translateX(-1px); }
+}
+.marquee-track span { text-shadow: -3px 0 rgba(70,232,220,.28), 3px 0 rgba(208,51,37,.28); }
+/* ---------- 随机故障事件 ---------- */
+#fx-glitch { position: fixed; inset: 0; z-index: 870; pointer-events: none; opacity: 0; }
+body.glitching #fx-glitch { opacity: 1; animation: glA .4s steps(6) 1; }
+#fx-glitch::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(transparent 0 11%, rgba(70,232,220,.18) 11% 13%, transparent 13% 52%,
+    rgba(208,51,37,.2) 52% 55%, transparent 55% 79%, rgba(236,231,221,.12) 79% 81%, transparent 81%);
+}
+#fx-glitch::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(70,232,220,.06) 0 3px, transparent 3px 7px);
+}
+@keyframes glA {
+  0% { opacity: .95; transform: translateX(0); }
+  25% { opacity: .4; transform: translateX(-9px); }
+  50% { opacity: .85; transform: translateX(7px) skewX(.6deg); }
+  75% { opacity: .3; transform: translateX(-5px); }
+  100% { opacity: 0; transform: none; }
+}
+body.glitching section, body.glitching .hero { animation: glSkew .4s steps(4) 1; }
+@keyframes glSkew {
+  33% { transform: translateX(-7px) skewX(-.8deg); }
+  66% { transform: translateX(6px); }
+}
+/* ---------- 终端系统消息 ---------- */
+#hud-toast {
+  position: fixed; left: 18px; bottom: 58px; z-index: 860; pointer-events: none;
+  font-family: var(--f-m); font-size: 9.5px; letter-spacing: 1.5px; line-height: 2;
+  color: var(--cyan); opacity: .85;
+}
+#hud-toast .warn { color: var(--red); }
+#hud-toast div { animation: toastIn .3s steps(4); }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-12px); } }
+@media print { #fx-canvas, #fx-rain, #fx-spec, #fx-radar, .fx-scanbeam, .aurora, .bg-word, .hud-corner, #hud-read, #hud-toast, #fx-glitch, #cursor-ring, #fx-flick, .cursor-trail, .click-ping, .click-wave, .glitch-bit { display: none !important; } }
+
+/* ---------- 音效开关 ---------- */
+.snd-btn {
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 2px;
+  color: var(--cyan); background: transparent; border: 1px solid rgba(70,232,220,.55);
+  padding: 5px 12px; cursor: pointer; margin-left: 16px; transition: all .25s;
+}
+.snd-btn:hover { background: rgba(70,232,220,.12); box-shadow: 0 0 12px rgba(70,232,220,.3); }
+.snd-btn.off { color: var(--ink-dim); border-color: var(--line); }
+
+/* ---------- 点击标点 ---------- */
+.click-ping { position: fixed; z-index: 880; width: 40px; height: 40px; margin: -20px 0 0 -20px; pointer-events: none; }
+/* 点击全屏冲击波 */
+.click-wave {
+  position: fixed; z-index: 878; width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  border: 1px solid rgba(70,232,220,.65); border-radius: 50%; pointer-events: none;
+  animation: waveA .8s ease-out forwards;
+}
+@keyframes waveA { from { transform: scale(1); opacity: .85; } to { transform: scale(42); opacity: 0; } }
+/* ---------- 滚动色差（画面移动 = 信号偏移） ---------- */
+body.rolling .hero-title, body.rolling .g-title, body.rolling .contact .big {
+  text-shadow: 2.5px 0 rgba(70,232,220,.6), -2.5px 0 rgba(208,51,37,.6);
+}
+body.rolling #progress { background: var(--cyan); }
+/* ---------- 雷达扫描组件 ---------- */
+#fx-radar {
+  position: fixed; right: 26px; bottom: 66px; z-index: 850; width: 52px; height: 52px;
+  border-radius: 50%; border: 1px solid rgba(70,232,220,.4); pointer-events: none; opacity: .85;
+}
+#fx-radar::before {
+  content: ""; position: absolute; inset: 5px; border-radius: 50%;
+  border: 1px dashed rgba(70,232,220,.28); animation: curSpin 7s linear infinite;
+}
+#fx-radar::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(70,232,220,.55), transparent 30%);
+  animation: curSpin 2.4s linear infinite;
+}
+/* ---------- 实时音频频谱 ---------- */
+#fx-spec { position: fixed; left: 16px; bottom: 14px; z-index: 850; pointer-events: none; opacity: .9; }
+.click-ping::before {
+  content: ""; position: absolute; inset: 0; border: 1px solid var(--cyan); border-radius: 50%;
+  animation: pingA .5s ease-out forwards;
+}
+.click-ping::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1px;
+  background: var(--red); transform: translate(-50%, -50%);
+  animation: pingX .35s steps(3) forwards;
+}
+@keyframes pingA { from { transform: scale(.3); opacity: 1; } to { transform: scale(2.4); opacity: 0; } }
+@keyframes pingX { to { width: 26px; opacity: 0; } }
+@media print { .snd-btn, .click-ping { display: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- 开场幕布 -->
+<div id="boot"><span>RENDERING PORTFOLIO — 载入中</span></div>
+<canvas id="fx-canvas"></canvas>
+<div class="fx-scanbeam"></div>
+<div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+<div class="hud-corner bl"></div><div class="hud-corner br"></div>
+<div id="hud-read">SYS.BOOT…</div>
+<div id="hud-toast"></div>
+<canvas id="fx-spec" width="190" height="32"></canvas>
+<div id="fx-radar"></div>
+<canvas id="fx-rain"></canvas>
+<div id="fx-glitch"></div>
+<div id="cursor-ring"></div>
+<div id="fx-flick"></div>
+
+<!-- 全局氛围背景 -->
+<div class="atmo atmo-grid"></div>
+<div class="atmo atmo-noise"></div>
+<div class="atmo atmo-scan"></div>
+<div class="atmo atmo-beam"></div>
+<div class="aurora c1"></div><div class="aurora c2"></div><div class="aurora c3"></div>
+
+<!-- 分布全页的巨型水印字 -->
+<div class="bg-word" data-depth="3" style="top: 10%;  left: -1.5%;  font-size: 250px;">ART × TECH</div>
+<div class="bg-word" data-depth="4" style="top: 36%;  right: -2%;  font-size: 210px;">COLLAGE / NOIZE</div>
+<div class="bg-word" data-depth="3" style="top: 60%;  left: 3%;    font-size: 190px;">HALFTONE 300DPI</div>
+<div class="bg-word" data-depth="5" style="top: 84%;  right: 1%;    font-size: 230px;">SIGNAL ∞ 2026</div>
+
+<div class="vtext v-right"><b>艺术与科技作品集</b> — PORTFOLIO OF ART &amp; TECHNOLOGY / 2024–2026</div>
+<div class="vtext v-left">VEINS DEVELOPED — SIGNAL 0x7F3A — COLLAGE / HALFTONE / GLITCH / CYBER</div>
+
+<!-- 进度线 / 光标 -->
+<div id="progress"></div>
+<div class="cursor-cross"></div>
+<div class="cursor-dot"></div>
+
+<header>
+  <div><b>袁上恒</b> YUAN SHANGHENG</div>
+  <nav>
+    <a href="#works">作品</a>
+    <a href="#about">关于</a>
+    <a href="#contact">联系</a>
+    <span class="cy" id="clock" style="margin-left:28px"></span>
+    <button class="snd-btn" id="snd-btn" title="音效开关">SND:ON</button>
+  </nav>
+</header>
+
+<!-- ==================== HERO ==================== -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-index">#<b>20260316</b> / PORTFOLIO / V.1 — SELECTED WORKS</div>
+
+    <h1 class="hero-title g-title" data-t="YUAN">
+      YUAN
+      <span class="row2"><span class="italic">Shang</span>HENG<span class="star">*</span></span>
+    </h1>
+    <div class="hero-sub">艺术与科技 / ART &amp; TECHNOLOGY — 拼贴 × 半调 × 故障 × 赛博</div>
+
+    <div class="hero-visual selbox" data-depth="6">
+      <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+      <img src="assets/adam.jpg" alt="主视觉 — 创造亚当" />
+      <div class="dots red" style="position:absolute;"></div>
+    </div>
+
+    <div class="tag red" data-depth="10" style="right:4%; top:-6%;">GENTLE PROPHECY — 温柔预言</div>
+    <div class="tag cy" data-depth="7" style="left:34%; top:-2%;">SEED SIGNAL / 0x7F3A</div>
+    <div class="tag" data-depth="8" style="right:40%; bottom:-4%;">OPEN RELIC / 未完成之物</div>
+
+    <div class="hero-foot">
+      <div class="hero-year">
+        <small>EXHIBITION INDEX — 个人作品索引 · 图片位置已留空待替换</small>
+        2026
+      </div>
+      <div class="term">
+        SYS.01 // SIGNAL_LOCKED 0x7F3A<br />
+        NOISE 14.7% — GRAIN 300DPI<br />
+        &gt;&gt;&gt; RENDERING_REALITY_
+      </div>
+    </div>
+  </div>
+
+  <div class="marquee">
+    <div class="marquee-track" id="marquee">
+      <span>Interactive Installation <em>/</em> 影像装置 <em>/</em> <span class="cy">Generative Art</span> <em>/</em> 数据可视化 <em>/</em> TouchDesigner <em>/</em> 实验影像 <em>/</em>&nbsp;</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 作品 ==================== -->
+<section id="works">
+  <div class="sec-head reveal">
+    <span class="no">(01)</span>
+    <h2 class="g-title" data-t="WORKS">WORKS</h2>
+    <span class="zh">作品索引 · 图框留空 — 点击查看详情</span>
+  </div>
+  <div class="car-wrap">
+    <div class="car-stage" id="car-stage">
+      <div class="car-tilt" id="car-tilt">
+        <div class="car-deep" id="car-deep">
+          <div class="car-gridwall"></div>
+          <div class="car-word">WORKS<i>WORKS</i></div>
+        </div>
+        <div class="car-ring" id="car-ring"></div>
+        <div class="car-floor"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+    <div class="car-cap">
+      <span class="car-no" id="car-no">01</span>
+      <div class="car-t">
+        <b id="car-title"></b>
+        <span id="car-zh"></span>
+      </div>
+      <button class="btn red" id="car-open">查看项目 →</button>
+    </div>
+    <div class="car-hint"><b>滚轮 / 拖拽</b> = 旋转作品环 &nbsp;·&nbsp; <b>点击卡片</b> = 查看作品 &nbsp;·&nbsp; <b>← →</b> = 切换</div>
+  </div>
+</section>
+
+<!-- ==================== 关于 ==================== -->
+<section id="about">
+  <div class="sec-head reveal">
+    <span class="no">(02)</span>
+    <h2 class="g-title" data-t="ABOUT">ABOUT</h2>
+    <span class="zh">关于</span>
+  </div>
+  <div class="about-wrap">
+    <div>
+      <p class="about-statement reveal">
+        未来不是被描述的，<br />
+        而是像藤蔓一样<em>缠绕着现在</em><span class="cy">生长</span>出来的。
+      </p>
+      <p class="about-detail reveal">
+        我是袁上恒，湖北美术学院艺术与科技专业。我的实践游走在装置、影像与生成艺术之间——用数据、光与声音编织「可被触摸的未来」。技术不是冰冷的工具，而是一种新的叙事语法；当古典的、仪式的与数字的东西在同一张画布上叠压，故事才真正开始生长。
+      </p>
+      <div class="skills reveal" id="skills"></div>
+    </div>
+    <div class="about-side reveal">
+      <div class="redbox">HETERO-GENEOUS<br />RESONANCE<br /><br />异质共振<br />艺术 × 科技 × 仪式</div>
+      <div class="vertical-note">VEINS DEVELOPED — VEINS OF PRACTICE, MEDIA AND RITUAL</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 联系 ==================== -->
+<section id="contact" class="contact">
+  <p class="kicker reveal">(03) — GET IN TOUCH</p>
+  <h2 class="big g-title reveal" data-t="LET'S CONNECT">Let's <em>connect</em></h2>
+  <a class="mail reveal" href="mailto:hello@example.com">HELLO@EXAMPLE.COM</a>
+  <footer>
+    <div>© 2026 YUAN SHANGHENG — ALL RIGHTS RESERVED</div>
+    <div>CROSS-BORDER BREATH ↗</div>
+  </footer>
+</section>
+<div class="giant-foot">26</div>
+
+<!-- ==================== 详情弹层 ==================== -->
+<div id="detail">
+  <button class="close" id="detail-close">×</button>
+  <div class="detail-inner">
+    <!-- ===== 作品专属封面 ===== -->
+    <div class="d-cover">
+      <div class="d-reg tl"></div><div class="d-reg tr"></div>
+      <div class="d-reg bl"></div><div class="d-reg br"></div>
+      <span class="d-giant" id="d-giant">01</span>
+      <div class="d-cover-grid">
+        <div class="d-left">
+          <div class="d-meta"><b>WORK</b> — PORTFOLIO ARCHIVE / 作品档案</div>
+          <h1 class="d-title g-title" id="d-title" data-t=""></h1>
+          <p class="d-sub" id="d-sub"></p>
+          <div class="d-term">
+            SYS.FILE // RGB_SPLIT: ACTIVE<br />
+            HALFTONE 300DPI — SCAN 60Hz<br />
+            &gt;&gt;&gt; OPENING_RELIC_
+          </div>
+        </div>
+        <div class="d-visual-wrap">
+          <div class="d-redoffset"></div>
+          <figure class="d-visual selbox">
+            <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+            <img id="d-img" src="" alt="" style="display:none" />
+            <div class="ph-dots" id="d-phdots"></div>
+            <div class="ph-label" id="d-phlabel">作品图占位<br />— PLACEHOLDER —</div>
+            <div class="dots red" style="position:absolute; opacity:.45;"></div>
+            <span class="strip s1"></span>
+            <span class="strip s2"></span>
+            <span class="strip s3"></span>
+          </figure>
+          <div class="tag red" id="d-tag-no" style="left:-26px; top:-16px;">NO. 01 — 05</div>
+          <div class="tag cy" style="right:-18px; bottom:30%;">ARCHIVE / 开启作品</div>
+        </div>
+      </div>
+    </div>
+    <div id="d-media"></div>
+    <div class="detail-desc">
+      <div class="label">ABOUT THIS WORK</div>
+      <p id="d-desc"></p>
+    </div>
+    <div class="detail-nav">
+      <button class="btn" id="d-prev">← 上一个</button>
+      <button class="btn" id="d-next">下一个 →</button>
+      <button class="btn red" id="d-back">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ★★★ 数据区 ★★★
+   - img: ""  = 显示「作品图占位」空框（当前状态）
+     想放图时：把图片放进 assets 文件夹，改成 img: "assets/你的图.jpg"
+   - title / zh / desc：项目标题与简介，直接改文字即可
+   ============================================================ */
+const PROJECTS = [
+  {
+    img: "assets/heartbeat.jpg",
+    title: "Echo of Heartbeat",
+    zh: "心跳回响 · 爱在生命之初的共鸣",
+    desc: "《心跳回响》是一款融合科学、技术与艺术的互动装置，以孕期父母情绪与胎儿感知为核心主题，将抽象的情感影响转化为可感知的多感官体验。作品以 3D 打印镂空婴孩模型为载体，内置模拟心脏与音效模块，依托 ESP32 与情绪识别程序实现交互：当体验者输入正向文字，心脏平稳跳动并伴随欢笑声；输入负面文字则心跳紊乱、发出哭叫，用强烈视听对比直观呈现母体情绪对胎儿发育的深刻作用。装置结合表观遗传学与临床研究依据，以艺术化方式传递「爱在生命之初即塑造生命底色」的理念，引导观者反思语言与情绪的力量，唤醒对生命早期情感环境的关注与守护。",
+    gallery: [
+      { src: "assets/hb-concept.jpg",  cap: "概念设计图 / CONCEPT DESIGN" },
+      { src: "assets/hb-process1.jpg", cap: "过程记录 · 装置整体与情绪识别控制端" },
+      { src: "assets/hb-process2.jpg", cap: "过程记录 · 3D 打印婴孩模型与电路组装" },
+      { src: "assets/hb-process3.jpg", cap: "过程记录 · 培养箱结构与硬件制作" },
+      { src: "assets/hb-board.png",    cap: "展览展板 / EXHIBITION BOARD", wide: true }
+    ],
+    video: { src: "assets/hb-video.mp4", cap: "视频展示 / VIDEO DOCUMENTATION" },
+    demo: { src: "assets/hb-demo.html", label: "运行交互演示 →" },
+    demoNote: "串口控制 · 弹幕关键词检测系统（浏览器中直接运行）",
+    info: [
+      ["作品概念", "基于情绪识别的生命体交互装置 —— 我拒绝，早在生命之初就已开始的倾听"],
+      ["关键词", "情绪计算 · 数字生命 · 交互装置 · 科技人文 · 生命伦理"],
+      ["硬件组成", "半透明婴孩模型（3D 打印 2mm 壁厚）· LED 心跳系统 · 扬声器 · 麦克风 · 温湿度监控（模拟早产儿培养环境）"],
+      ["软件功能", "情绪识别（Python，自动综合输入与关键词判断正负向）· ESP32 控制（MicroPython：A/B 控制指令、心跳模式、LED 灯光模式、音频播放）"],
+      ["情绪反馈机制", "正向情绪 (A)：心跳温柔跳动 · LED 缓慢呼吸 · 播放笑声 / 负面情绪 (B)：心跳剧烈摇捕 · LED 快速闪烁 · 播放哭声"],
+      ["技术亮点", "Python 情绪识别 · 多模态反馈（光 / 声音）· 接入大模型 · ESP32 硬件控制 · 心率呼吸模拟 · 交互与装置艺术结合"],
+      ["团队成员", "鞠晓松 2024001130 · 袁上恒 2024001114 · 黄子林 2024001113"],
+      ["指导老师 / 课程", "菊哲 · 艺术科技 · 课程编号 1009305"]
+    ]
+  },
+  {
+    img: "assets/gl-card.jpg",
+    title: "Antique Cadence & Visible Shadow",
+    zh: "古律现影 · 声音可视化交互装置",
+    desc: "以传统青铜编钟为核心意象的 TouchDesigner 声音可视化交互装置。通过编钟敲击乐音频的导入与解析，提取音高、响度、频率、音色核心参数，驱动荧光粒子跟随声波物理震动规律运动、聚拢、重组——音高决定粒子的高低排布，响度控制聚集密度，频率影响流动速度，音色赋予粒子不同的荧光色泽。伴随音律递进，零散粒子逐步实体化、结构化，最终精准勾勒出青铜编钟的完整形态，实现「从无形粒子到有形器物」的动态蜕变，让沉寂千年的编钟以数字粒子的形态重新奏响礼乐华章。作品以暗调古朴为基底、赛博荧光为质感，探索传统文化数字化活化的全新可能。",
+    gallery: [
+      { src: "assets/gl-poster.png", cap: "动态海报静帧 · 古律现影 Sound Visualization Interaction / DYNAMIC POSTER" },
+      { src: "assets/gl-board.jpg",  cap: "展览展板 · 作品概念 / 装置原型 / TouchDesigner 制作过程 / EXHIBITION BOARD", wide: true }
+    ],
+    video: { src: "assets/gl-video.mp4", cap: "古律现影 · 完整作品视频 / ANTIQUE CADENCE & VISIBLE SHADOW" },
+    audio: { src: "assets/gl-audio.mp3", cap: "编钟敲击音频 · 音频（古律现影）/ SOUND SOURCE" },
+    info: [
+      ["作品形式", "TouchDesigner 屏幕交互作品（音乐可视化 · 声控光影）"],
+      ["交互核心", "让声音看得见 —— 依托音频导入技术，提取音频中音高、响度、频率、音色核心参数，驱动粒子系统完成动态演变，实现声音与视觉的个性化、趣味性联动表达"],
+      ["交互逻辑", "声音解构 → 粒子演变 → 器物成型 → 视听共鸣"],
+      ["视觉风格", "东方古朴 · 暗调氛围 · 赛博粒子荧光 · 粒子声波可视化 · 庄重典雅"],
+      ["技术实现", "TouchDesigner 音频分析模块 + 粒子反馈容器渲染；工程文件：动态海报 / 结课作业（.toe 源文件 × 4，含粒子系统五大制作板块）"],
+      ["作者信息", "袁上恒 2024001114"],
+      ["课程 / 指导老师", "10803407《可视化艺术与交互媒体》· 指导老师：田飞 · 2026 年 4 月 30 日"]
+    ]
+  },
+  {
+    img: "assets/cj-still.jpg",
+    title: "Wind of the Yangtze, Dream of Youth",
+    zh: "长江的风，少年的梦",
+    desc: "《长江的风，少年的梦》是一部由 AI 创作的宫崎骏风格治愈系动画短片。作品根据《长江的孩子 - 生命之树》节选，使用 ChatGPT、即梦、小云雀创作，以小女孩来到武汉游玩为主线，通过黄鹤楼、长江大桥、龟山电视塔、武汉大学与东湖等城市空间，展现孩子眼中的江城夏日与成长记忆。作品以「风」为核心意象，将长江的江风、飘动的樱花、水面的波纹与传统剪纸艺术结合，表达孩子对世界的感知与想象。作品采用温暖柔和的吉卜力式手绘视觉风格，通过电影级长镜头、空气感光影与梦境化运镜，营造充满诗意的童年氛围——传递友情、成长与地域文化认同感，表达孩子们在旅途中收获勇气、梦想与温暖陪伴的过程。",
+    gallery: [
+      { src: "assets/cj-poster.jpg", cap: "动画短片剧照合集 · 樱花与武汉大学 / 长江大桥与江城少年 / 龟山电视塔 / 两江交汇 / 黄鹤楼日落 / 剪纸艺术 / POSTER & FILM STILLS", wide: true },
+      { src: "assets/cj-still.jpg",  cap: "静帧特写 · 窗边的孩子与白鲸 / FILM STILL" }
+    ],
+    video: { src: "assets/cj-video.mp4", cap: "动画短片完整版（高清） / ANIMATED SHORT FILM" },
+    info: [
+      ["作品形式", "AI 生成动画短片（治愈系 · 动态影像类）"],
+      ["参展赛事", "首届《长江的孩子》AI 创意设计展（书城杯）· 专业组 · 动态影像类"],
+      ["创作来源", "根据《长江的孩子 - 生命之树》节选创作"],
+      ["AI 工具链", "ChatGPT（剧本与分镜）· 即梦（画面生成）· 小云雀（视频生成）"],
+      ["叙事主线", "小女孩来到武汉游玩，途经黄鹤楼、长江大桥、龟山电视塔、武汉大学与东湖等城市空间，展现孩子眼中的江城夏日与成长记忆"],
+      ["核心意象", "以「风」为核心 —— 长江的江风、飘动的樱花、水面的波纹与传统剪纸艺术结合"],
+      ["视觉风格", "温暖柔和的吉卜力式手绘 · 电影级长镜头 · 空气感光影 · 梦境化运镜"],
+      ["团队 / 指导老师", "袁上恒 · 陈玥彤 / 指导老师：董惠惠 · 2026 年 5 月"]
+    ]
+  },
+  {
+    img: "assets/kc-card.jpg",
+    title: "A City of Flavors · Wuhan Food Map",
+    zh: "江城烟火 · 百味武汉",
+    desc: "以武汉为中心的城市美食文化空间数据可视化交互地图。以「挖掘武汉独特的饮食文化历史」为目标，经「数据收集（中国—湖北—武汉）→ Deepseek/豆包检索美食店铺数据 → Excel 表格 → 高德地图/epsg 确认经纬度 → 导出 CSV → GeoJSON → Mapbox」的完整数据流程，将武汉美食四大天王——热干面、三鲜豆皮、鲜鱼糊汤粉、面窝——与四大图层美食店铺落到真实坐标之上。地图样式以朱红色为核心、暖黄色调凝聚城市烟火气：老字号大街大面积暖黄，河流大海深蓝，这座具有深厚历史底蕴的城市，展示属于它的温暖暖色调，让城市烟火气与历史文化的可读性并存。作品支持 2D/3D 柱状图切换（店铺热门度生成高度），不同类型美食数据数据柱采用红、绿、蓝、紫等高可见度色彩区分，点击地标查看差异化详情弹窗，双击图层可播放路线动画巡游江城味道。",
+    gallery: [
+      { src: "assets/kc-mapview.jpg", cap: "3D 柱状图 · 店铺热门度空间分布全图 / 3D EXTRUSION VIEW" },
+      { src: "assets/kc-board.jpg",   cap: "展览展板 · 设计思路 / 数据收集 / Mapbox 样式 / 网页地图展示 / EXHIBITION BOARD", wide: true }
+    ],
+    audio: { src: "assets/kc-audio.mp3", cap: "背景音乐 · I Really Want to Stay at Your House (Cyberpunk) / BGM" },
+    demo: { src: "assets/kc-map/wuhan-food-map.html", label: "运行武汉美食交互地图 →" },
+    demoNote: "Mapbox 网页地图 · 需联网加载底图 · 支持图层筛选 / 2D-3D 切换 / 路线巡游",
+    info: [
+      ["作品形式", "Mapbox GL 网页交互地图 · 空间信息数据可视化"],
+      ["数据流程", "数据收集（中国—湖北—武汉）→ Deepseek / 豆包检索美食店铺数据 → Excel 表格 → 高德地图 / epsg 确认经纬度 → 导出 CSV → GeoJSON → 导入 Mapbox"],
+      ["图层体系", "老字号·过早经典 #E67E22 · 八方风味·外地美食 #2ECC71 · 烟火夜市·深夜食堂 #E74C3C · 特色小吃·宝藏店铺 #9B59B6"],
+      ["地图样式", "朱红色为核心、暖黄色调凝聚城市烟火气；老字号大街大面积暖黄、河流大海深蓝，兼顾城市烟火气与历史文化可读性"],
+      ["交互功能", "2D/3D 柱状图切换（热门度 → 柱体高度）· 图层筛选定位 · 差异化详情弹窗 · 店铺侧边栏 · 路线动画巡游（双击导航项 / 开始路线按钮）"],
+      ["武汉美食四大天王", "Top1 热干面 · Top2 三鲜豆皮 · Top3 鲜鱼糊汤粉 · Top4 面窝"],
+      ["团队信息", "袁上恒 2024001114 · 黄子林 2024001113"],
+      ["课程 / 指导老师", "10803406《空间信息应用》· 指导老师：Vincent Toure · 结课时间 2026 年 4 月 8 日"],
+      ["源文件存档", "TouchDesigner 工程 0422.toe（171MB）· 汇报演示文稿 PPTX（233MB）· 店铺数据表 CSV（已含于作品集 assets）"]
+    ]
+  },
+  {
+    img: "assets/os-card.jpg",
+    title: "Dreamy Star River",
+    zh: "星河梦 · 流动星系粒子动态海报",
+    desc: "以粒子系统模拟流动的彩色星系的生成式动态海报。2400 颗 CosmicOrbitalParticle 持续运动形成动态星云，中央旋转光环增强赛博空间氛围；粒子响应鼠标位置，被吸引并环绕其旋转，增强交互感与沉浸感；色彩随时间渐变产生霓虹赛博效果。通过分层运动与速度控制，表达浪漫、科技而梦幻的宇宙愿景。海报版式本身即作品：顶部标题栏、动画区、核心代码与设计概念双栏、页脚课程信息构成完整的 3:4 海报结构。",
+    gallery: [
+      { src: "assets/os-poster.png", cap: "动态海报 · Dreamy Star River（含核心代码与设计概念版式）/ DYNAMIC POSTER", wide: true }
+    ],
+    video: { src: "assets/os-video.mp4", cap: "屏幕录制 · 粒子星系交互演示 / SCREEN RECORDING" },
+    demo: { src: "assets/os-demo.html", label: "运行粒子星河演示 →" },
+    demoNote: "Processing 粒子系统网页移植版 · 移动鼠标吸引轨道 / SPACE 重置粒子群",
+    files: [
+      { src: "assets/os-dreamy.pde",     label: "Dreamy_Star_Rriver.pde — 动态海报版源码" },
+      { src: "assets/os-fullscreen.pde", label: "yuanshangheng2024001114.pde — 全屏交互版源码" }
+    ],
+    info: [
+      ["作品形式", "Processing（Java 模式）生成式动态海报 · 粒子系统互动程序"],
+      ["粒子系统", "2400 颗 CosmicOrbitalParticle 分四层构建（尺寸 1→10.5px · 轨道速度 0.01→0.15 · 轨道半径 70→560px 逐层梯度），大粒子附带辉光晕圈"],
+      ["运动模型", "galaxyMotion 波场驱动（cos/sin 相位偏移）+ 向心力约束形成星系涡旋；速度衰减系数 0.94 模拟宇宙尘埃阻尼"],
+      ["交互机制", "orbitMouse —— 鼠标进入粒子轨道半径内即被吸引并绕其旋转（含垂直切向速度），SPACE / 重置粒子群重新生成"],
+      ["视觉设计", "HSB 色彩模型，色相随时间与距心距离动态偏移（hue + time×38 + dist×0.5）；中央光环半径随 sin 呼吸变化（130→250px）并以 time×0.9 旋转"],
+      ["海报版式", "3:4 海报框：顶部 Dreamy Star River 标题栏 + 动画区 + 核心代码 / 设计概念双栏 + Open Source Programming 页脚"],
+      ["课程 / 指导老师", "《开源编程基础》Open Source Programming · 指导老师：Zhang Fan（张帆）· 2026 年 3 月 23 日"],
+      ["作者信息", "袁上恒 2024001114"]
+    ]
+  },
+  {
+    img: "assets/tf-shot13.jpg",
+    title: "Sugar Island · Soul Farm",
+    zh: "糖屿 · 心灵农场 — VR 沉浸式疗愈景观",
+    desc: "一款 VR 虚拟现实疗愈景观设计——「在甜与自然之间，种下情绪的花园」。打造开放式、拥抱情绪、非评判性的虚拟自然疗愈空间：以「糖」隐喻情绪，象征甜蜜与负担的双重属性。场景以糖果马卡龙配色、田园流水与花草森林构建低压力视觉环境；玩家通过浇水、追光、收集鸡蛋、拔萝卜等轻劳作式微小交互获得疗愈回应，也可在许愿河、棉花糖森林单纯漫游放松。低刺激「心灵花园」与高刺激「美食市集」双重栖息空间自由切换，适配不同情绪状态；开放漫游机制让场景以「持续存在」的岛屿姿态给予陪伴，彩蛋式隐藏内容映射真实疗愈中美好随机出现的过程。全年龄友好——儿童、青少年、成人、情侣、家庭都可快速上手。",
+    gallery: [
+      { src: "assets/tf-shot3.jpg",  cap: "场景实拍 03 · 开场河谷 / SCENE CAPTURE" },
+      { src: "assets/tf-shot4.jpg",  cap: "场景实拍 04 · 花园入口 / SCENE CAPTURE" },
+      { src: "assets/tf-shot5.jpg",  cap: "场景实拍 05 · 糖果装置 / SCENE CAPTURE" },
+      { src: "assets/tf-shot6.jpg",  cap: "场景实拍 06 · 许愿河畔 / SCENE CAPTURE" },
+      { src: "assets/tf-shot7.jpg",  cap: "场景实拍 07 · 田园小径 / SCENE CAPTURE" },
+      { src: "assets/tf-shot8.jpg",  cap: "场景实拍 08 · 棉花糖树 / SCENE CAPTURE" },
+      { src: "assets/tf-shot9.jpg",  cap: "场景实拍 09 · 市集花车 / SCENE CAPTURE" },
+      { src: "assets/tf-shot10.jpg", cap: "场景实拍 10 · 花田景致 / SCENE CAPTURE" },
+      { src: "assets/tf-shot11.jpg", cap: "场景实拍 11 · 游乐设施 / SCENE CAPTURE" },
+      { src: "assets/tf-shot12.jpg", cap: "场景实拍 12 · 林间装饰 / SCENE CAPTURE" },
+      { src: "assets/tf-shot13.jpg", cap: "场景实拍 13 · 中心花园全景 / SCENE CAPTURE" },
+      { src: "assets/tf-shot14.jpg", cap: "场景实拍 14 · 集市街景 / SCENE CAPTURE" },
+      { src: "assets/tf-shot16.jpg", cap: "场景实拍 16 · 彩虹装置 / SCENE CAPTURE" },
+      { src: "assets/tf-shot17.jpg", cap: "场景实拍 17 · 市集全景 / SCENE CAPTURE" },
+      { src: "assets/tf-shot18.jpg", cap: "场景实拍 18 · 花房温室 / SCENE CAPTURE" },
+      { src: "assets/tf-shot19.jpg", cap: "场景实拍 19 · 农场边景 / SCENE CAPTURE" },
+      { src: "assets/tf-shot20.jpg", cap: "场景实拍 20 · 花园广场 / SCENE CAPTURE" },
+      { src: "assets/tf-shot21.jpg", cap: "场景实拍 21 · 糖果山丘 / SCENE CAPTURE" },
+      { src: "assets/tf-shot22.jpg", cap: "场景实拍 22 · 全景俯瞰 / SCENE CAPTURE" },
+      { src: "assets/tf-board.jpg",  cap: "展览展板 · 项目介绍 / 设计理念 / 元素提取 / 项目亮点 / 鸟瞰图 / 场景汇总 / EXHIBITION BOARD", wide: true }
+    ],
+    videos: [
+      { src: "assets/tf-video.mp4",     cap: "作品汇报视频 · VR 虚拟现实艺术 / PRESENTATION VIDEO" },
+      { src: "assets/tf-recording.mp4", cap: "虚幻引擎完整录屏 · 全场景漫游实录 / FULL PLAYTHROUGH (390MB)" }
+    ],
+    info: [
+      ["作品形式", "VR 虚拟现实艺术 · 虚幻引擎（Unreal Engine）沉浸式疗愈景观设计"],
+      ["作品概念", "A virtual reality healing landscape design where sweetness grows and the mind finds home —— 在甜与自然之间，种下情绪的花园"],
+      ["设计理念", "自然 × 情绪 × 体验三环交叠：以「糖」隐喻情绪（易融、易变形，象征甜蜜与负担的双重属性）；体验设计通过虚拟空间场景与自然元素带来沉浸式精神疗愈，是一个个体探索疗愈情绪、寻找自我调适力量的虚拟农场"],
+      ["九大场景 · 场景治愈", "① 中心花园 ② 许愿河 ③ 棉花糖森林"],
+      ["九大场景 · 交互疗愈", "④ 收集鸡蛋 ⑤ 美食市集 ⑥ 趣味棋 ⑦ 农场高尔夫 ⑧ 一起拔萝卜 ⑨ 欢乐游乐场"],
+      ["项目亮点", "① 开放漫游机制——自由决定交互节奏与探索路径，场景以「持续存在」的岛屿给予陪伴 ② 双重栖息空间——低刺激「心灵花园」放松对话 × 高刺激「美食市集」唤醒内驱力，自由切换 ③ 轻劳作式交互疗愈——浇水/追光/拾取/喂养等低门槛微小劳作，以微小成就回应实现情绪修复 ④ 彩蛋式隐藏内容——无强制引导的惊喜发现，映射真实疗愈中美好随机出现 ⑤ 全年龄友好——儿童/青少年/成人/情侣/家庭皆可快速上手"],
+      ["氛围设计", "糖果马卡龙配色 · 田园流水 · 花草森林构建低压力视觉环境；许愿河、棉花糖森林提供情绪寄托空间，单纯漫游即可获得放松"],
+      ["体验构成", "沉浸式体验为主体 · 劳作交互与环境漫步辅助（玩家自主决定节奏）"],
+      ["现实映射", "呼应当下快节奏生活中 KPI / 内卷考核带来的心灵疲惫——「心灵花园」与市集的对比设计引导参与者重新审视情绪节律，促进自我对话"],
+      ["团队成员", "朱宸熠 2024001121 · 袁上恒 2024001114"],
+      ["课程 / 指导老师", "《VR 虚拟现实艺术》· 艺术与科技一班 · 指导老师：张帆"]
+    ]
+  },
+  {
+    img: "assets/bs-main.png",
+    title: "Bense Symbiosis · Digital Heritage Translation",
+    zh: "本色共生 · 苏州本色美术馆遗存文脉的数字媒介转译",
+    desc: "以苏州本色美术馆为对象的城市文化遗产数字媒介转译设计实践——融合产业、时空、民俗的沟通交流，空间本身便是一种大地遗存的叙事载体。作品以「产业协同 × 时空叠合 × AR 构件交互」三条线索展开：数据层构建苏州全域霓虹产业协同关系图谱（4832 处工业厂房、1235.6 万人口、十大产业类型的资源流向与协同发展指数），以全息数据网络可视化城市与美术馆的能量联结；空间层以双动线规划与四层时空叠合数字影像重塑美术馆展陈叙事；交互层开发 AR 构件交互系统——扫描·识别·探索，用手机扫描建筑构件唤醒埋藏在建筑中的记忆，让旧木构件开启 AR 时光之旅，并延伸至小程序概念界面。当观者以东方禅意进入本色美术馆，遗存文脉便在数字媒介中完成共生转译。",
+    gallery: [
+      { src: "assets/bs-board1.png",  cap: "展览展板一 · 霓虹产业协同关系图谱 / 工业厂房分布 / 人口分布 / 客流数据 / EXHIBITION BOARD 01", wide: true },
+      { src: "assets/bs-board2.png",  cap: "展览展板二 · 双动线规划 / 四层时空叠合数字影像 / AR 构件交互 / EXHIBITION BOARD 02", wide: true },
+      { src: "assets/bs-main.png",        cap: "主视觉 · 霓虹产业协同关系图 / INDUSTRY SYMBIOSIS RELATIONSHIP MAP" },
+      { src: "assets/bs-neon.png",        cap: "霓虹产业协同关系图 · 展示各产业之间协同关系及资源流向分析 / INDUSTRY SYMBIOSIS" },
+      { src: "assets/bs-neon-final.png",  cap: "霓虹产业协同关系图 · 最终版 / FINAL VERSION" },
+      { src: "assets/bs-dashboard.png",   cap: "霓虹全息数据网络仪表盘 / HOLOGRAPHIC DATA DASHBOARD" },
+      { src: "assets/bs-holo.png",        cap: "苏州全息城市数据中枢 / SUZHOU HOLOGRAPHIC CITY DATA HUB" },
+      { src: "assets/bs-city.png",        cap: "苏州全域产业数据地图 / CITYWIDE INDUSTRIAL DATA MAP" },
+      { src: "assets/bs-skyline.png",     cap: "城市地标全息剪影 / HOLOGRAPHIC SKYLINE" },
+      { src: "assets/bs-factory.png",     cap: "工业厂房分布 · 4832 处厂房 / 十大重点产业类型占比 / FACTORY DISTRIBUTION" },
+      { src: "assets/bs-pop.png",         cap: "人口分布 · 常住人口 12,356,000 / 人口年龄结构 / POPULATION DISTRIBUTION" },
+      { src: "assets/bs-visitor.png",     cap: "本色美术馆客流数据可视化 · 12 个月客流量趋势 / 客流高峰分析 / VISITOR DATA" },
+      { src: "assets/bs-flow2.png",       cap: "双动线规划 · 普通参观动线 + 深度探索动线 / DUAL ROUTE PLANNING" },
+      { src: "assets/bs-flow.png",        cap: "动线分析图 / CIRCULATION ANALYSIS" },
+      { src: "assets/bs-layer4.png",      cap: "四层时空叠合展演 · 历史层 / 厂房层 / 时空叠合层 / 当代数字层 / FOUR-LAYER TEMPORAL EXHIBITION" },
+      { src: "assets/bs-light.png",       cap: "苏州本色美术馆光影映像 / LIGHT & SHADOW PROJECTION" },
+      { src: "assets/bs-ar-parts.png",    cap: "AR 构件交互 · 扫描·识别·探索——用手机扫描 AR 交互构件，唤醒埋藏在建筑中的记忆 / AR INTERACTION" },
+      { src: "assets/bs-ar-history.png",  cap: "苏州本色美术馆 AR 历史图层展板 / AR HISTORY LAYER" },
+      { src: "assets/bs-ar-time.png",     cap: "旧木构件的 AR 时光之旅 / AR TIME JOURNEY OF OLD TIMBER" },
+      { src: "assets/bs-app.png",         cap: "本色美术馆小程序界面概念展板 / MINI-PROGRAM UI CONCEPT" },
+      { src: "assets/bs-brick-a.png",     cap: "砖痕 · 时空锚点 · 数字展陈方案 / BRICK MARKS: DIGITAL EXHIBITION" },
+      { src: "assets/bs-brick-b.png",     cap: "砖痕 · 时空锚点 · 数字遗产展陈方案 / DIGITAL HERITAGE EXHIBITION" },
+      { src: "assets/bs-brick-c.png",     cap: "砖痕 · 时空锚点 · 本色美术馆场地研究 / SITE RESEARCH" },
+      { src: "assets/bs-brick-d.png",     cap: "砖痕 · 时空锚点 · 本色美术馆更新研究 / RENEWAL RESEARCH" },
+      { src: "assets/bs-bg1.jpg",         cap: "视觉底纹素材 · 数字雨 / BG TEXTURE" },
+      { src: "assets/bs-bg2.jpg",         cap: "视觉底纹素材 · 数据流 / BG TEXTURE" }
+    ],
+    videos: [
+      { src: "assets/bs-video1.mp4", cap: "《本色共生》作品视频 / PROJECT VIDEO" },
+      { src: "assets/bs-video2.mp4", cap: "《本色共生》数字影像视频 02 / DIGITAL VISUAL VIDEO" }
+    ],
+    info: [
+      ["作品形式", "城市文化遗产数字媒介转译 · 数据可视化 + 空间展陈叙事 + AR 增强现实交互"],
+      ["研究对象", "苏州本色美术馆（相门桥畔由旧厂房改造的东方禅意美术馆）——遗存文脉的数字媒介转译设计实践"],
+      ["数据可视化层", "霓虹产业协同关系图谱：苏州全域 4,832 处工业厂房 · 常住人口 12,356,000 · 十大产业类型（电子信息 28.3% / 装备制造 22.3% / 生物医药 16.8% 等）· 资源流向与空间分布 · 协同发展指数 87.6 · 12 个月客流量趋势与客流类型分析"],
+      ["空间展陈层", "双动线规划（普通参观动线 + 深度探索动线）· 四层时空叠合展演（01 历史遗址层 → 02 厂房构建层 → 03 时空叠合层 → 04 当代数字展示层）· 光影映像"],
+      ["AR 交互层", "AR 构件交互系统——扫描 · 识别 · 探索：用手机扫描 AR 交互构件，唤醒埋藏在建筑中的记忆；旧木构件的 AR 时光之旅；配套 AR 前置交互小程序概念界面"],
+      ["文化线索", "砖痕 · 时空锚点系列研究：场地研究 / 更新研究 / 数字遗产展陈方案——以砖痕为时间锚点串联美术馆遗存文脉"],
+      ["团队信息", "袁上恒 2024001114 · 朱宸熠 2024001121"],
+      ["班级 / 指导老师", "艺术与科技一班 · 指导老师：易璇菲 · 2026 年 11 月 1 日"]
+    ]
+  },
+  {
+    img: "assets/ch-card.jpg",
+    title: "Tidal Surging Qiantang",
+    zh: "潮涌钱塘 · 钱塘潮天文规律信息可视化",
+    desc: "以钱塘江潮汐现象为主题的信息可视化设计作品，依托艺术与科技交叉学科方法，将钱塘潮自然科学规律与地域文化进行解构与科普创新。钱塘江大潮是我国著名自然奇观，受天体引潮力、月相周期与特殊地形共同作用形成，拥有独特的周期性与多样的涌潮形态；当下大众对钱塘潮的认知较为片面，缺乏系统、科学的知识体系，传统科普形式枯燥、信息零散。作品系统整合 2025 年钱塘江潮汐变化数据，呈现期望大潮、弦月小潮的周期性规律，直观呈现潮汐随月相更替的强弱变化；同时拆解半日潮、全日潮、混合潮三类潮汐类型的形成原理与特征差异，并针对性阐释钱塘江独有一线潮、交叉潮、回头潮的成因与视觉形态，区分天文潮汐与河口涌潮的不同逻辑，构建完整的钱塘潮知识体系。作品摒弃繁杂文字叙述，以扁平化视觉、信息图版与数据图表为载体，将抽象的自然规律与动态潮汐规律转化为直观、现代的视觉语言，兼顾科学严谨性与视觉审美张力——以设计赋能自然科普，让古老的钱塘潮以年轻化、轻量化、系统化的形式传播普及。",
+    gallery: [
+      { src: "assets/ch-board1.png",    cap: "展览展板一 · 天文潮汐原理 / 月相周期 / 六大潮涌样式 TD 效果图 / EXHIBITION BOARD 01", wide: true },
+      { src: "assets/ch-board2.png",    cap: "展览展板二 · 2025 年钱塘江年度潮汐图谱 / 12 个月潮汐波形 / 沿江站点潮差 / EXHIBITION BOARD 02", wide: true },
+      { src: "assets/ch-overview.png",  cap: "项目总览 · 作品一 / 作品二 / 视觉元素 / 图表元素 / 项目简述 / PROJECT OVERVIEW", wide: true },
+      { src: "assets/ch-tide-types.png",cap: "六大潮涌样式汇总 · 半日潮 / 全日潮 / 混合潮 / 一线潮 / 交叉潮 / 回头潮 / SIX TIDE PATTERNS" },
+      { src: "assets/ch-title.png",     cap: "标题视觉 · 潮涌钱塘 / TITLE DESIGN" },
+      { src: "assets/ch-title-a.png",   cap: "标题视觉 · 透明底版 / TITLE TRANSPARENT" },
+      { src: "assets/ch-ai1.png",       cap: "概念视觉生成 01 / CONCEPT VISUAL" },
+      { src: "assets/ch-ai2.png",       cap: "概念视觉生成 02 / CONCEPT VISUAL" },
+      { src: "assets/ch-cyber.png",     cap: "附 · 赛博建筑艺术海报 / CYBER ARCHITECTURE POSTER" }
+    ],
+    videos: [
+      { src: "assets/ch-main.mp4",             cap: "作品一 · 动画互动完整版 / INTERACTIVE ANIMATION" },
+      { src: "assets/ch-lab1.mp4",             cap: "动态实验一 / MOTION EXPERIMENT 01" },
+      { src: "assets/ch-tide-semidiurnal.mp4", cap: "半日潮 · SEMIDIURNAL TIDE（月引潮力在地球产生两个对称高潮区，随地球自转一天先后经过两次高潮）" },
+      { src: "assets/ch-tide-diurnal.mp4",     cap: "全日潮 · DIURNAL TIDE（月球赤纬较大时，地球某区域一天仅一次高潮）" },
+      { src: "assets/ch-tide-mixed.mp4",       cap: "混合潮 · MIXED TIDE（形态介于全日潮与半日潮之间，潮高随月赤纬变化）" },
+      { src: "assets/ch-tide-line.mp4",        cap: "一线潮 · LINEAR TIDE（交叉潮沙泥堆积使江底抬升、水流分散，水面加速上升，江河上层河水持续下泄）" },
+      { src: "assets/ch-tide-cross.mp4",       cap: "交叉潮 · CROSS TIDE（江水在大型沙泥洲被流水被沙洲分流，两股潮交汇）" },
+      { src: "assets/ch-tide-return.mp4",      cap: "回头潮 · RETURN TIDE（潮头遇障碍反射回涌）" },
+      { src: "assets/ch-rec1.mp4",             cap: "制作过程录屏 01 / PROCESS RECORDING" },
+      { src: "assets/ch-rec2.mp4",             cap: "制作过程录屏 02 / PROCESS RECORDING" },
+      { src: "assets/ch-rec3.mp4",             cap: "制作过程录屏 03 / PROCESS RECORDING" },
+      { src: "assets/ch-rec4.mp4",             cap: "制作过程录屏 04 / PROCESS RECORDING" }
+    ],
+    info: [
+      ["作品形式", "信息可视化设计 · TouchDesigner 动态潮汐模拟 · 年度潮汐数据图谱"],
+      ["作品主题", "以钱塘江潮汐现象为主题，依托艺术与科技交叉学科方法，将钱塘潮自然科学规律与地域文化进行解构与科普创新，构建完整的钱塘潮知识体系"],
+      ["天文原理", "天体引潮力 + 月相周期 + 特殊地形共同作用：农历初一（朔）日月分处地球两侧、天文潮最大；农历十五（望）日月同侧引潮力叠加；天文大潮发生在初一十五，但因河道阻力潮水峰值延迟 2–3 天——故八月十八成为观测潮别"],
+      ["六大潮涌样式", "半日潮 SEMIDIURNAL · 全日潮 DIURNAL · 混合潮 MIXED (OVERTIDAL) · 一线潮 LINEAR · 交叉潮 CROSS · 回头潮 RETURN（均以 TouchDesigner 制作动态效果图与视频）"],
+      ["潮汐类型拆解", "半日潮——月引潮力在地球产生两个对称潮区，一天两次高潮；全日潮——月球赤纬较大时一天仅一次高潮；混合潮——介于两者之间，潮高随月赤纬变化；一线潮——沙泥堆积使水流分散、水面加速上升；交叉潮——江水被沙洲分流后两股潮交汇；回头潮——潮头遇障碍反射回涌"],
+      ["数据图谱", "2025 年钱塘江年度潮汐图谱：12 个月潮汐波形（HW 高潮 / LW 低潮 / Po 潮位）· 沿江站点潮差 8–6 米（澉浦 → 盐官 → 仓前 → 七堡 → 闻家堰 → 钱塘江大桥）· 月度统计与涨落分布"],
+      ["团队信息", "朱宸熠 2024001121 · 袁上恒 2024001114"],
+      ["班级 / 指导老师 / 课程", "艺术与科技一班 · 指导老师：许晶晶 · 课程名称：《信息设计与策略》"]
+    ]
+  },
+  {
+    img: "assets/gj-3.png",
+    title: "The Golden Observation Deck",
+    zh: "观景台 · 有机仿生建筑概念设计",
+    desc: "一座以有机仿生形态为核心的建筑概念设计——黄金观景台。建筑以「年轮」与「水流」为形态母题：多层悬挑观景环逐层退台，环环相扣；外壁布满流动的年轮状肌理，如水流冲刷出的自然纹理；中央漏斗形天井自顶部贯穿而下，螺旋楼梯沿建筑骨架盘旋攀行，底部根系状结构将整座建筑「扎入」大地。1–3 号图呈现建筑本体的多角度特写，A–D 号图为建筑植入湖岸沙洲真实环境后的航拍合成——秋色林木与碧色湖水之间，金属光泽的仿生建筑与自然地貌形成对话：它是观景的容器，自身亦是景观。",
+    gallery: [
+      { src: "assets/gj-3.png", cap: "建筑本体 · 正面全景 / 正立面形态推敲 / FRONT VIEW" },
+      { src: "assets/gj-1.png", cap: "建筑本体 · 多层观景环与螺旋楼梯特写 / STRUCTURE DETAIL" },
+      { src: "assets/gj-2.png", cap: "建筑本体 · 顶部俯视 · 中央漏斗天井与年轮肌理 / TOP VIEW" },
+      { src: "assets/gj-a.png", cap: "环境合成 · 湖岸沙洲航拍 · 高机位 / AERIAL SITE VIEW" },
+      { src: "assets/gj-b.png", cap: "环境合成 · 湖湾半岛 · 秋色环境融入 / LAKESIDE PENINSULA" },
+      { src: "assets/gj-c.png", cap: "环境合成 · 江心洲航拍 · 三面环水 / RIVER ISLET VIEW" },
+      { src: "assets/gj-d.png", cap: "环境合成 · 湖畔全景 · 建筑与天际线 / PANORAMIC VIEW" }
+    ],
+    info: [
+      ["作品形式", "建筑概念设计 · 有机仿生形态 · AI 视觉生成与环境合成渲染"],
+      ["形态母题", "年轮 × 水流 —— 外壁流动的年轮状肌理模拟水流冲刷的自然纹理，多层悬挑观景环逐层退台、环环相扣"],
+      ["空间结构", "中央漏斗形天井贯穿顶部 · 螺旋楼梯沿骨架盘旋攀行 · 底部根系状结构锚固大地 · 顶层环形平台 360° 观景"],
+      ["场地策略", "建筑植入湖岸沙洲 / 江心洲真实地貌：秋色林木与碧色湖水之间，金属光泽仿生建筑与自然地貌对话——观景的容器，自身亦是景观"],
+      ["图像体系", "本体特写 3 张（正立面 / 结构细节 / 顶部俯视）+ 环境合成航拍 4 张（高机位 / 半岛 / 江心洲 / 全景）"]
+    ]
+  }
+];
+
+const SKILLS = ["TOUCHDESIGNER", "GENERATIVE ART", "互动装置", "情绪识别 / PYTHON", "ESP32 硬件", "实验影像", "数据可视化", "拼贴美学", "展陈叙事"];
+
+/* ---------- 3D 旋转作品环（旋转木马） ---------- */
+const ring  = document.getElementById("car-ring");
+const stage = document.getElementById("car-stage");
+const N     = PROJECTS.length;
+const STEP  = 360 / N;
+
+/* 构建环上卡片（拼贴 × RGB 分离特效层） */
+PROJECTS.forEach((p, i) => {
+  const c = document.createElement("div");
+  c.className = "car-card";
+  c.dataset.i = i;
+  c.innerHTML = `
+    <div class="ph-frame selbox">
+      <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+      <span class="wno">PROJECT / 0${i + 1}</span>
+      <div class="ph-dots"></div>
+      <div class="tint"></div>
+      <div class="glitch-bar"></div>
+      ${p.img
+        ? `<img src="${p.img}" alt="${p.zh}" loading="lazy" />
+           <img class="fx-g g1" src="${p.img}" alt="" loading="lazy" />
+           <img class="fx-g g2" src="${p.img}" alt="" loading="lazy" />`
+        : `<div class="ph-center">
+             <span class="big-no">0${i + 1}</span>
+             <b>作品图占位 — PLACEHOLDER</b>
+           </div>`}
+      <div class="fx-dots"></div>
+      <span class="fx-no">0${i + 1}</span>
+      <span class="fx-tape t1"></span><span class="fx-tape t2"></span>
+      <div class="fx-bar"></div>
+      <span class="fx-tag">W.0${i + 1} // OPEN_FILE</span>
+      <span class="ph-corner c-tl">W.4:3 — RGB_SPLIT</span>
+      <span class="ph-corner c-br">0${i + 1} / 0${N}</span>
+      <span class="car-go">查看项目 →</span>
+    </div>`;
+  ring.appendChild(c);
+});
+const cards = [...ring.children];
+
+/* ---------- 空间漂浮碎片：二维元素散布在三维景深中 ---------- */
+const deep = document.getElementById("car-deep");
+const GLYPHS = ["✕", "01", "▚", "▮", "✦", "RGB", "██", "1/0", "W.", "®", "0X1F", "HALFTONE"];
+for (let i = 0; i < 18; i++) {
+  const d = document.createElement("span");
+  d.className = "car-deb " + ["cy", "red", "dim"][i % 3];
+  d.innerHTML = `<i>${GLYPHS[i % GLYPHS.length]}</i>`;
+  d.style.left = (Math.random() * 88 + 3) + "%";
+  d.style.top = (Math.random() * 78 + 8) + "%";
+  d.style.setProperty("--z", -(240 + Math.random() * 560) + "px");
+  d.style.setProperty("--d", (5 + Math.random() * 7) + "s");
+  d.style.fontSize = (13 + Math.random() * 44) + "px";
+  d.style.animationDelay = (-Math.random() * 9) + "s";
+  deep.appendChild(d);
+}
+
+/* 半径按屏幕宽度自适应（景深更大） */
+let R = 640;
+function calcR() { R = stage.clientWidth < 760 ? 390 : 640; }
+calcR();
+
+let curA = 0, tgt = 0, frontIdx = -1, drag = null;
+
+function layout() {
+  cards.forEach((c, i) => {
+    const a = i * STEP;
+    const isFront = i === frontIdx;
+    c.style.transform = `rotateY(${a}deg) translateZ(${R}px) scale(${isFront ? 1.08 : 1})`;
+    c.classList.toggle("is-front", isFront);
+    c.style.zIndex = isFront ? 10 : 1;
+  });
+}
+
+function frontFrom(a) {
+  return ((Math.round(-a / STEP) % N) + N) % N;
+}
+
+function updateCaption(i) {
+  document.getElementById("car-no").textContent = `0${i + 1}`;
+  document.getElementById("car-title").textContent = PROJECTS[i].title;
+  document.getElementById("car-zh").textContent = `${PROJECTS[i].zh} — 0${i + 1} / 0${N}`;
+}
+
+/* 鼠标视差：整个空间随指针轻微倾斜 */
+const tiltEl = document.getElementById("car-tilt");
+let tX = 0, tY = 0, tXs = 0, tYs = 0;
+stage.addEventListener("mousemove", e => {
+  const r = stage.getBoundingClientRect();
+  tY = ((e.clientX - r.left) / r.width - .5) * 7;
+  tX = -((e.clientY - r.top) / r.height - .5) * 5;
+});
+stage.addEventListener("mouseleave", () => { tX = 0; tY = 0; });
+
+/* 渲染循环：阻尼趋近目标角度 */
+function tick() {
+  curA += (tgt - curA) * 0.085;
+  if (Math.abs(tgt - curA) < 0.01) curA = tgt;
+  tXs += (tX - tXs) * 0.06;
+  tYs += (tY - tYs) * 0.06;
+  tiltEl.style.transform = `rotateX(${tXs}deg) rotateY(${tYs}deg)`;
+  ring.style.transform = `translateZ(-${R * 0.4}px) rotateX(-12deg) rotateY(${curA}deg)`;
+  /* 背面卡片标记（朝向远离观察者的卡片压暗） */
+  cards.forEach((c, i) => {
+    const deg = ((i * STEP + curA) % 360 + 360) % 360;
+    c.classList.toggle("is-back", deg > 95 && deg < 265);
+  });
+  const f = frontFrom(curA);
+  if (f !== frontIdx) {
+    const first = frontIdx === -1;
+    frontIdx = f;
+    layout();
+    updateCaption(f);
+    if (!first) burst();
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* 滚轮 → 旋转（仅在环上滚动时接管） */
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const dir = e.deltaY > 0 ? 1 : -1;
+  const nt = Math.round((tgt + dir * STEP) / STEP) * STEP;
+  if (nt !== tgt) { tgt = nt; sfx.tick(); }
+}, { passive: false });
+
+/* 拖拽旋转，松手吸附最近卡片 */
+let moved = false;
+stage.addEventListener("pointerdown", e => {
+  drag = { x: e.clientX, a: tgt };
+  moved = false;
+  stage.classList.add("dragging");
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener("pointermove", e => {
+  if (!drag) return;
+  if (Math.abs(e.clientX - drag.x) > 6) moved = true;
+  tgt = drag.a + (e.clientX - drag.x) * 0.22;
+});
+stage.addEventListener("pointerup", () => {
+  drag = null;
+  stage.classList.remove("dragging");
+  const nt = Math.round(tgt / STEP) * STEP;
+  if (nt !== tgt) { sfx.tick(); }
+  tgt = nt;
+});
+
+/* 点击卡片：正面 → 打开详情；侧面 → 转到正面 */
+cards.forEach(c => c.addEventListener("click", e => {
+  const i = +c.dataset.i;
+  if (i === frontIdx && !moved) openDetail(i);
+  else snapTo(i);
+  e.stopPropagation();
+}));
+function snapTo(i) { tgt = -i * STEP; }
+
+/* 底部信息条按钮 & 键盘左右 */
+document.getElementById("car-open").addEventListener("click", () => openDetail(frontIdx));
+addEventListener("keydown", e => {
+  if (document.getElementById("detail").classList.contains("open")) return;
+  if (e.key === "ArrowRight") tgt -= STEP;
+  if (e.key === "ArrowLeft")  tgt += STEP;
+});
+addEventListener("resize", () => { calcR(); layout(); });
+updateCaption(0);
+layout();
+
+/* ---------- 技能标签 ---------- */
+document.getElementById("skills").innerHTML =
+  SKILLS.map((s, i) => `<span class="${i % 4 === 0 ? "hot" : ""}">${s}</span>`).join("");
+
+/* ---------- 跑马灯无缝循环 ---------- */
+const track = document.getElementById("marquee");
+track.innerHTML += track.innerHTML;
+
+/* ---------- 滚动入场 ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add("visible"); io.unobserve(e.target); }
+}), { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+/* ---------- 滚动进度线 ---------- */
+addEventListener("scroll", () => {
+  const h = document.documentElement;
+  document.getElementById("progress").style.width =
+    (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + "%";
+}, { passive: true });
+
+/* ---------- 顶部时钟 ---------- */
+setInterval(() => {
+  const d = new Date();
+  document.getElementById("clock").textContent =
+    `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+}, 1000);
+
+/* ---------- 自定义光标 ---------- */
+const dot = document.querySelector(".cursor-dot");
+const cross = document.querySelector(".cursor-cross");
+let mx = innerWidth / 2, my = innerHeight / 2, cx = mx, cy = my;
+addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
+(function loop() {
+  cx += (mx - cx) * 0.18; cy += (my - cy) * 0.18;
+  cross.style.transform = `translate(${cx - 17}px, ${cy - 17}px)`;
+  dot.style.transform = `translate(${mx - 5}px, ${my - 5}px)`;
+  requestAnimationFrame(loop);
+})();
+document.addEventListener("mouseover", e => {
+  dot.classList.toggle("big", !!e.target.closest(".work, .more, .btn, header a, .mail, .ph-frame"));
+});
+
+/* ---------- 背景装饰视差 ---------- */
+let px = 0, py = 0;
+addEventListener("mousemove", e => {
+  px = e.clientX / innerWidth - 0.5;
+  py = e.clientY / innerHeight - 0.5;
+});
+(function bgLoop() {
+  document.querySelectorAll("[data-depth]").forEach(el => {
+    const d = +el.dataset.depth;
+    el.style.translate = `${-px * d * 2.4}px ${-py * d * 2.4}px`;
+  });
+  requestAnimationFrame(bgLoop);
+})();
+
+/* ---------- 全页故障脉冲（自动 + SPACE / 双击触发） ---------- */
+function burst(playSnd) {
+  document.body.classList.remove("burst");
+  void document.body.offsetWidth;
+  document.body.classList.add("burst");
+  clearTimeout(burst._t);
+  burst._t = setTimeout(() => document.body.classList.remove("burst"), 500);
+  if (playSnd) { sfx.burst(); }
+}
+setInterval(() => burst(false), 7000);
+addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); burst(true); } });
+addEventListener("dblclick", () => burst(true));
+
+/* ---------- 详情弹层 ---------- */
+const detail = document.getElementById("detail");
+let cur = 0, lastY = 0;
+function fill(i) {
+  cur = (i + PROJECTS.length) % PROJECTS.length;
+  const p = PROJECTS[cur];
+  document.getElementById("d-giant").textContent = `0${cur + 1}`;
+  const dt = document.getElementById("d-title");
+  dt.textContent = p.title;
+  dt.dataset.t = p.title;
+  document.getElementById("d-sub").textContent = p.zh;
+  document.getElementById("d-tag-no").textContent = `NO. 0${cur + 1} — 0${PROJECTS.length}`;
+  document.getElementById("d-desc").textContent = p.desc;
+  const img = document.getElementById("d-img");
+  const ph = document.getElementById("d-phlabel");
+  if (p.img) { img.src = p.img; img.style.display = "block"; ph.style.display = "none"; }
+  else { img.style.display = "none"; ph.style.display = "flex"; }
+
+  /* ---------- 媒体区：图集 / 视频 / 交互演示 / 信息表 ---------- */
+  let html = "";
+
+  if (p.gallery && p.gallery.length) {
+    html += `<div class="media-sec">
+      <div class="m-label">DOCUMENTATION — 过程与展板</div>
+      <div class="gallery">`;
+    p.gallery.forEach(g => {
+      html += `<figure class="${g.wide ? "wide" : ""}">
+        <img src="${g.src}" alt="${g.cap}" loading="lazy" />
+        <figcaption>${g.cap}</figcaption>
+      </figure>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (p.videos) {
+    p.videos.forEach(v => {
+      html += `<div class="media-sec">
+        <div class="m-label">VIDEO — ${v.cap}</div>
+        <div class="video-wrap">
+          <video src="${v.src}" controls preload="metadata" playsinline></video>
+        </div>
+      </div>`;
+    });
+  } else if (p.video) {
+    html += `<div class="media-sec">
+      <div class="m-label">VIDEO — ${p.video.cap}</div>
+      <div class="video-wrap">
+        <video src="${p.video.src}" controls preload="metadata" playsinline></video>
+      </div>
+    </div>`;
+  }
+
+  if (p.audio) {
+    html += `<div class="media-sec">
+      <div class="m-label">AUDIO — ${p.audio.cap}</div>
+      <audio src="${p.audio.src}" controls preload="metadata" style="width:100%; accent-color:#d03325;"></audio>
+    </div>`;
+  }
+
+  if (p.demo) {
+    html += `<div class="media-sec">
+      <div class="m-label">INTERACTIVE DEMO — 交互演示</div>
+      <div class="demo-row">
+        <a class="btn cy" href="${p.demo.src}" target="_blank" rel="noopener">${p.demo.label}</a>
+        <span class="demo-note">${p.demoNote || ""}</span>
+      </div>
+    </div>`;
+  }
+
+  if (p.files && p.files.length) {
+    html += `<div class="media-sec">
+      <div class="m-label">SOURCE FILES — 源码文件（Processing .pde）</div>
+      <div class="demo-row">`;
+    p.files.forEach(f => {
+      html += `<a class="btn" href="${f.src}" download>${f.label} ↓</a>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (p.info && p.info.length) {
+    html += `<div class="info-grid">`;
+    p.info.forEach(([k, v]) => {
+      html += `<div><div class="k">${k}</div><div class="v">${v}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById("d-media").innerHTML = html;
+  randomizeStrips();
+  detail.scrollTop = 0;
+}
+/* 封面故障条随机位置 */
+function randomizeStrips() {
+  document.querySelectorAll("#detail .strip").forEach(s => {
+    s.style.top = (Math.random() * 90 + 2) + "%";
+    s.style.left = (Math.random() * 25) + "%";
+    s.style.width = (45 + Math.random() * 50) + "%";
+  });
+}
+function openDetail(i) {
+  lastY = scrollY;
+  fill(i);
+  detail.classList.add("open");
+  document.body.style.overflow = "hidden";
+  setTimeout(() => burst(true), 300);
+}
+function closeDetail() {
+  detail.querySelectorAll("video,audio").forEach(v => v.pause());
+  detail.classList.remove("open");
+  document.body.style.overflow = "";
+  scrollTo(0, lastY);
+}
+document.getElementById("detail-close").addEventListener("click", closeDetail);
+document.getElementById("d-back").addEventListener("click", closeDetail);
+document.getElementById("d-prev").addEventListener("click", () => fill(cur - 1));
+document.getElementById("d-next").addEventListener("click", () => fill(cur + 1));
+addEventListener("keydown", e => { if (e.key === "Escape") closeDetail(); });
+
+/* ---------- 入场：终端打字机开机序列 ---------- */
+const boot = document.getElementById("boot");
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";   /* 刷新后回到页面顶部 */
+const bootLines = [
+  "BOOT SEQUENCE // RGB_SPLIT: ACTIVE",
+  "LOADING ASSETS ................ OK",
+  "HALFTONE 300DPI / SCAN 60Hz .... OK",
+  "RENDER PORTFOLIO >>>"
+];
+boot.innerHTML = bootLines.map(() => "<div class='bl'></div>").join("") + "<span></span>";
+function typeBoot(li = 0, ci = 0) {
+  const els = boot.querySelectorAll(".bl");
+  if (li >= bootLines.length) {
+    setTimeout(() => {
+      boot.classList.add("off");
+      document.querySelectorAll(".reveal").forEach((el, i) =>
+        setTimeout(() => el.classList.add("visible"), 150 + i * 60));
+    }, 320);
+    return;
+  }
+  if (ci < bootLines[li].length) {
+    els[li].textContent = bootLines[li].slice(0, ci + 1);
+    if (ci === 0) sfx.line();
+    if (ci % 2 === 0) sfx.type();
+    setTimeout(() => typeBoot(li, ci + 1), 14);
+  } else {
+    setTimeout(() => typeBoot(li + 1, 0), 90);
+  }
+}
+/* 延迟启动：等音效引擎等全部脚本初始化完成后再开始打字 */
+setTimeout(typeBoot, 60);
+
+/* ---------- 赛博粒子网络画布 ---------- */
+const fxc = document.getElementById("fx-canvas");
+const fx = fxc.getContext("2d");
+let pts = [];
+function fxInit() {
+  fxc.width = innerWidth; fxc.height = innerHeight;
+  pts = Array.from({ length: 78 }, () => ({
+    x: Math.random() * fxc.width, y: Math.random() * fxc.height,
+    vx: (Math.random() - .5) * .55, vy: (Math.random() - .5) * .55,
+    r: Math.random() * 1.6 + .4
+  }));
+}
+fxInit(); addEventListener("resize", fxInit);
+let fxG = 0;
+addEventListener("mousemove", () => { if (Math.random() < .03) fxG = 3; });
+(function fxDraw() {
+  fx.clearRect(0, 0, fxc.width, fxc.height);
+  const off = fxG > 0 ? (Math.random() * 26 - 13) : 0;
+  if (fxG > 0) fxG--;
+  pts.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0 || p.x > fxc.width) p.vx *= -1;
+    if (p.y < 0 || p.y > fxc.height) p.vy *= -1;
+    fx.fillStyle = Math.random() < .12 ? "rgba(208,51,37,.8)" : "rgba(70,232,220,.7)";
+    fx.fillRect(p.x + off, p.y, p.r, p.r);
+  });
+  fx.strokeStyle = "rgba(70,232,220,.08)";
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+    if (dx * dx + dy * dy < 18000) {
+      fx.beginPath(); fx.moveTo(pts[i].x + off, pts[i].y); fx.lineTo(pts[j].x + off, pts[j].y); fx.stroke();
+    }
+  }
+  requestAnimationFrame(fxDraw);
+})();
+
+/* ---------- HUD 追踪光标 ---------- */
+const cring = document.getElementById("cursor-ring");
+let ccx = -100, ccy = -100, crx = -100, cry = -100;
+addEventListener("mousemove", e => {
+  ccx = e.clientX; ccy = e.clientY;
+  cring.classList.toggle("big", !!e.target.closest("a,button,.car-card,.selbox,.more,.ph-frame"));
+});
+(function crLoop() {
+  crx += (ccx - crx) * .22; cry += (ccy - cry) * .22;
+  cring.style.transform = `translate(${crx}px,${cry}px)`;
+  requestAnimationFrame(crLoop);
+})();
+
+/* ============================================================
+   科幻音效引擎（Web Audio 实时合成 · 无音频文件）
+   ============================================================ */
+const SND = { on: true, ctx: null, master: null };
+function sctx() {
+  if (!SND.ctx) {
+    SND.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    SND.master = SND.ctx.createGain();
+    SND.master.gain.value = 1.0;
+    SND.master.connect(SND.ctx.destination);
+    SND.ana = SND.ctx.createAnalyser();   /* 实时频谱分析器 */
+    SND.ana.fftSize = 128;
+    SND.anaData = new Uint8Array(SND.ana.frequencyBinCount);
+    SND.master.connect(SND.ana);
+  }
+  if (SND.ctx.state === "suspended") SND.ctx.resume();
+  return SND.ctx;
+}
+function tone(f0, f1, dur, type = "sine", vol = .15) {
+  if (!SND.on) return;
+  try {
+    const c = sctx(), o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+    o.type = type;
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(SND.master);
+    o.start(t); o.stop(t + dur + .02);
+  } catch (err) {}
+}
+function noiseS(dur = .2, vol = .15, f0 = 1400, f1 = 300) {
+  if (!SND.on) return;
+  try {
+    const c = sctx(), t = c.currentTime;
+    const len = Math.floor(c.sampleRate * dur);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.3;
+    bp.frequency.setValueAtTime(f0, t);
+    bp.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
+    const g = c.createGain(); g.gain.value = vol;
+    src.connect(bp); bp.connect(g); g.connect(SND.master);
+    src.start(t);
+  } catch (err) {}
+}
+const sfx = {
+  hover: () => tone(1400, 2100, .05, "square", .07),
+  move: (v = .5) => {   /* 传输波：谐波正弦簇平滑上滑 + 颤波调制，丝滑流动感 */
+    if (!SND.on) return;
+    try {
+      const c = sctx(), t = c.currentTime;
+      const dur = .38;
+      const f0 = 88 + Math.random() * 32 + v * 36;   /* 更低沉基频 */
+      /* 三个谐波分音（1 : 2 : 3），整体平滑上滑 */
+      [1, 2.02, 3.01].forEach((mul, k) => {
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(f0 * mul, t);
+        o.frequency.exponentialRampToValueAtTime(f0 * mul * 1.55, t + dur);
+        /* 颤波：LFO 轻微调制频率，产生"波"的流动感 */
+        const lfo = c.createOscillator(), lg = c.createGain();
+        lfo.frequency.value = 5.5 + k;
+        lg.gain.value = f0 * mul * .006;
+        lfo.connect(lg); lg.connect(o.frequency);
+        lfo.start(t); lfo.stop(t + dur + .05);
+        g.gain.setValueAtTime(.0001, t);
+        g.gain.linearRampToValueAtTime(.026 / (k + 1.2), t + .11);
+        g.gain.linearRampToValueAtTime(.0001, t + dur);
+        o.connect(g); g.connect(SND.master);
+        o.start(t); o.stop(t + dur + .05);
+      });
+    } catch (err) {}
+  },
+  click: () => { tone(1900, 420, .09, "square", .17); noiseS(.06, .12, 3000, 800); },
+  tick:  () => { tone(2500, 1500, .04, "square", .14); tone(1200, 1800, .05, "sine", .09); },
+  whoosh:() => noiseS(.3, .22, 2200, 200),
+  burst: () => { noiseS(.32, .3, 2600, 120); tone(320, 55, .32, "sawtooth", .24); },
+  boot:  () => { tone(70, 920, .85, "sawtooth", .16); tone(220, 1200, .6, "sine", .1); noiseS(.5, .08, 900, 3000); },
+  type:  () => tone(1700 + Math.random() * 600, 1900, .025, "square", .09),
+  line:  () => tone(1100, 2400, .14, "sine", .11),
+  scroll:() => tone(950, 520, .04, "sine", .09)
+};
+
+/* ---------- 赛博科技环境背景音（脉冲引擎 · 数据回声 · 数字流） ---------- */
+let ambientOn = false;
+function startAmbient() {
+  if (ambientOn) return;
+  ambientOn = true;
+  const c = sctx(), t = c.currentTime;
+  const amb = c.createGain();
+  amb.gain.setValueAtTime(.0001, t);
+  amb.gain.linearRampToValueAtTime(.17, t + 4);   /* 4 秒缓缓淡入 */
+  amb.connect(SND.master);
+  /* 回声总线：哔声在此产生数据回波 */
+  const dly = c.createDelay(1); dly.delayTime.value = .34;
+  const fb = c.createGain(); fb.gain.value = .38;
+  const dw = c.createGain(); dw.gain.value = .5;
+  dly.connect(fb); fb.connect(dly); dly.connect(dw); dw.connect(amb);
+  /* 引擎低鸣：锯齿波 55/82.5Hz 重低通 + 心跳式脉冲 */
+  [55, 82.5].forEach((f, k) => {
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "sawtooth";
+    o.frequency.value = f + (Math.random() * .5 - .25);
+    const lp = c.createBiquadFilter(); lp.type = "lowpass";
+    lp.frequency.value = 140 + k * 60; lp.Q.value = 2;
+    g.gain.value = .34 / (k + 1);
+    const pulse = c.createOscillator(), pg = c.createGain();
+    pulse.type = "triangle";
+    pulse.frequency.value = .42 + k * .11;   /* 机器心跳 */
+    pg.gain.value = .16 / (k + 1);
+    pulse.connect(pg); pg.connect(g.gain);
+    pulse.start();
+    o.connect(lp); lp.connect(g); g.connect(amb);
+    o.start();
+  });
+  /* 数字流噪声：带通频带缓慢巡游（8 秒往返） */
+  const len = c.sampleRate * 4;
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+  const bp = c.createBiquadFilter(); bp.type = "bandpass";
+  bp.frequency.value = 700; bp.Q.value = 3;
+  const sweep = c.createOscillator(), sg = c.createGain();
+  sweep.frequency.value = .062;
+  sg.gain.value = 420;
+  sweep.connect(sg); sg.connect(bp.frequency);
+  sweep.start();
+  const ng = c.createGain(); ng.gain.value = .22;
+  src.connect(bp); bp.connect(ng); ng.connect(amb);
+  src.start();
+  /* 数据哔声：每 1.8-4.2 秒一声随机音高的短促哔，带回声 */
+  const SCALE = [523.25, 622.25, 698.46, 783.99, 932.33, 1046.5];
+  (function blip() {
+    if (SND.on) {
+      try {
+        const tt = c.currentTime;
+        const o = c.createOscillator(), g = c.createGain();
+        o.type = "sine";
+        o.frequency.value = SCALE[Math.random() * SCALE.length | 0];
+        g.gain.setValueAtTime(.0001, tt);
+        g.gain.linearRampToValueAtTime(.085, tt + .02);
+        g.gain.linearRampToValueAtTime(.0001, tt + .12);
+        o.connect(g); g.connect(amb); g.connect(dly);
+        o.start(tt); o.stop(tt + .15);
+      } catch (err) {}
+    }
+    setTimeout(blip, 1800 + Math.random() * 2400);
+  })();
+}
+
+/* ---------- 字符雨（稀疏 · 低透明度数据流） ---------- */
+const rainC = document.getElementById("fx-rain");
+const rctx = rainC.getContext("2d");
+let rainCols = [], rainBoost = 1;
+function rainInit() {
+  rainC.width = innerWidth; rainC.height = innerHeight;
+  const n = Math.max(6, Math.floor(rainC.width / 110));
+  rainCols = Array.from({ length: n }, () => ({
+    x: Math.random() * rainC.width,
+    y: Math.random() * -rainC.height,
+    sp: .5 + Math.random() * 1,
+    chars: Array.from({ length: 16 },
+      () => "01▚▞▮◉ABCDEF0123456789"[Math.random() * 21 | 0])
+  }));
+}
+rainInit(); addEventListener("resize", rainInit);
+(function rainDraw() {
+  rctx.clearRect(0, 0, rainC.width, rainC.height);
+  rctx.font = "10px monospace";
+  rainCols.forEach(col => {
+    col.y += col.sp * rainBoost;
+    col.chars.forEach((ch, i) => {
+      const yy = col.y - i * 13;
+      if (yy < -12 || yy > rainC.height) return;
+      if (i === 0) {
+        rctx.fillStyle = "rgba(208,51,37,.4)";
+        rctx.fillText(ch, col.x, yy);
+      } else {
+        rctx.fillStyle = `rgba(70,232,220,${.14 * (1 - i / 16)})`;
+        rctx.fillText(ch, col.x, yy);
+      }
+    });
+    if (col.y - 16 * 13 > rainC.height) {
+      col.y = Math.random() * -300;
+      col.x = Math.random() * rainC.width;
+      col.sp = .5 + Math.random() * 1;
+      col.chars = Array.from({ length: 16 },
+        () => "01▚▞▮◉ABCDEF0123456789"[Math.random() * 21 | 0]);
+    }
+  });
+  requestAnimationFrame(rainDraw);
+})();
+
+/* ---------- 随机故障事件（视觉撕裂 + 滋滋电流音 + 终端消息） ---------- */
+function glitchSnd() {
+  if (!SND.on) return;
+  try {
+    const c = sctx(), t = c.currentTime;
+    /* 滋滋电流声：白噪声 × 高频滤波 × 随机爆发包络 */
+    const len = Math.floor(c.sampleRate * .28);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const d = buf.getChannelData(0);
+    let env = 0;
+    for (let i = 0; i < len; i++) {
+      if (Math.random() < .09) env = Math.random() * (1 - i / len);   /* 随机火花爆发 */
+      d[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = c.createBufferSource(); src.buffer = buf;
+    const hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 2200;
+    const g = c.createGain();
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.linearRampToValueAtTime(.3, t + .015);
+    g.gain.linearRampToValueAtTime(.0001, t + .28);
+    src.connect(hp); hp.connect(g); g.connect(SND.master);
+    src.start(t);
+    /* 电流嗡底：锯齿波轻微下坠，像显像管漏电 */
+    const o = c.createOscillator(), og = c.createGain();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(115 + Math.random() * 30, t);
+    o.frequency.linearRampToValueAtTime(85, t + .24);
+    og.gain.setValueAtTime(.0001, t);
+    og.gain.linearRampToValueAtTime(.05, t + .03);
+    og.gain.linearRampToValueAtTime(.0001, t + .24);
+    o.connect(og); og.connect(SND.master);
+    o.start(t); o.stop(t + .26);
+  } catch (err) {}
+}
+function doGlitch() {
+  document.body.classList.add("glitching");
+  rainBoost = 3.2;
+  glitchSnd();
+  hudMsg(true);
+  if (SND.ctx && SND.on) {   /* 音轨瞬时抽气 = 信号干扰感 */
+    const t = SND.ctx.currentTime, g = SND.master.gain;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(.45, t + .06);
+    g.linearRampToValueAtTime(1, t + .32);
+  }
+  setTimeout(() => { document.body.classList.remove("glitching"); rainBoost = 1; }, 420);
+}
+let nextGlitch = Date.now() + 4500;
+setInterval(() => {
+  if (Date.now() > nextGlitch) {
+    doGlitch();
+    nextGlitch = Date.now() + 4500 + Math.random() * 7000;
+  }
+}, 500);
+
+/* ---------- 终端系统消息流 ---------- */
+const SYS_MSGS = [
+  ">> RGB_SPLIT DETECTED",
+  ">> SIGNAL LOST — RE-ROUTING",
+  ">> DECODING ARCHIVE …",
+  ">> NEURAL LINK STABLE",
+  ">> PACKET LOSS 0.3%",
+  ">> SYSTEM NOMINAL",
+  ">> SCAN CYCLE COMPLETE",
+  "⚠ REALITY BUFFER OVERFLOW",
+  ">> HALFTONE SYNC 60Hz",
+  ">> DREAM PROTOCOL ACTIVE",
+  ">> ORBITAL PARTICLES SYNCED",
+  ">> MEMORY BANK 09/09 LOADED"
+];
+function hudMsg(force) {
+  const t = document.getElementById("hud-toast");
+  if (!t.children.length && !force && Math.random() < .3) return;
+  const m = SYS_MSGS[Math.random() * SYS_MSGS.length | 0];
+  const el = document.createElement("div");
+  if (m.startsWith("⚠")) el.className = "warn";
+  el.textContent = m;
+  t.appendChild(el);
+  while (t.children.length > 4) t.removeChild(t.firstChild);
+  setTimeout(() => el.remove(), 5200);
+}
+setInterval(hudMsg, 6800);
+/* 点击标点 */
+addEventListener("pointerdown", e => {
+  const p = document.createElement("div");
+  p.className = "click-ping";
+  p.style.left = e.clientX + "px"; p.style.top = e.clientY + "px";
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 620);
+  const w = document.createElement("div");   /* 全屏冲击波 */
+  w.className = "click-wave";
+  w.style.left = e.clientX + "px"; w.style.top = e.clientY + "px";
+  document.body.appendChild(w);
+  setTimeout(() => w.remove(), 860);
+});
+/* 交互接线 */
+let lastHov = 0, lastMv = 0, bootedSnd = false;
+document.addEventListener("mouseover", e => {
+  const now = Date.now();
+  if (now - lastHov < 90) return;
+  if (e.target.closest("a,button,.car-card,.more,.selbox")) { lastHov = now; sfx.hover(); }
+});
+/* 光标拖尾光点（仅视觉，无音效） */
+let lastTrail = 0, ringGl = 0;
+addEventListener("mousemove", e => {
+  const now = Date.now();
+  if (now - lastTrail < 42) return;
+  lastTrail = now;
+  const t = document.createElement("span");
+  t.className = "cursor-trail" + (Math.random() < .18 ? " red" : "");
+  const s = 3 + Math.random() * 4;
+  t.style.width = t.style.height = s + "px";
+  t.style.left = e.clientX + "px"; t.style.top = e.clientY + "px";
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 520);
+  /* 光标周围的机械故障碎屑（更密更大范围） */
+  if (Math.random() < .62) {
+    const gb = document.createElement("div");
+    const type = Math.random();
+    if (type < .2) {
+      gb.className = "glitch-bit noise";
+    } else {
+      gb.className = "glitch-bit slice" + (type < .5 ? " red" : type < .66 ? " white" : "");
+      gb.style.width = 16 + Math.random() * 74 + "px";
+    }
+    gb.style.left = e.clientX + (Math.random() * 260 - 130) + "px";
+    gb.style.top = e.clientY + (Math.random() * 260 - 130) + "px";
+    document.body.appendChild(gb);
+    setTimeout(() => gb.remove(), 340);
+  }
+  if (Math.random() < .3) {   /* 偶尔一次蹦两个，故障更密集 */
+    const gb2 = document.createElement("div");
+    gb2.className = Math.random() < .25 ? "glitch-bit noise" : "glitch-bit slice" + (Math.random() < .5 ? " red" : "");
+    gb2.style.width = 16 + Math.random() * 74 + "px";
+    gb2.style.left = e.clientX + (Math.random() * 260 - 130) + "px";
+    gb2.style.top = e.clientY + (Math.random() * 260 - 130) + "px";
+    document.body.appendChild(gb2);
+    setTimeout(() => gb2.remove(), 340);
+  }
+  /* 光标环偶尔抽搐一下 */
+  if (now - ringGl > 600 && Math.random() < .6) {
+    ringGl = now;
+    cring.classList.add("glitching");
+    setTimeout(() => cring.classList.remove("glitching"), 400);
+  }
+}, { passive: true });
+/* 普通滚动音效（旋转木马区域有自己的滴答，不重复） */
+let lastWheel = 0;
+addEventListener("wheel", e => {
+  if (e.target.closest && e.target.closest("#car-stage")) return;
+  const now = Date.now();
+  if (now - lastWheel < 110) return;
+  lastWheel = now;
+  sfx.scroll();
+}, { passive: true });
+document.addEventListener("click", e => {
+  if (e.target.closest("a,button,.car-card,.more")) sfx.click();
+}, true);
+function firstSnd() {
+  if (bootedSnd) return;
+  bootedSnd = true; sctx(); sfx.boot(); startAmbient();
+}
+addEventListener("pointerdown", firstSnd);
+addEventListener("keydown", firstSnd);
+/* 音效开关 */
+const sndBtn = document.getElementById("snd-btn");
+sndBtn.addEventListener("click", () => {
+  SND.on = !SND.on;
+  sndBtn.textContent = SND.on ? "SND:ON" : "SND:OFF";
+  sndBtn.classList.toggle("off", !SND.on);
+  if (!SND.on && SND.ctx) SND.ctx.suspend();
+  else if (SND.ctx) { SND.ctx.resume(); sfx.click(); }
+});
+
+/* ---------- 实时音频频谱绘制 ---------- */
+const specC = document.getElementById("fx-spec");
+const spx = specC.getContext("2d");
+(function specDraw() {
+  spx.clearRect(0, 0, specC.width, specC.height);
+  if (SND.ana && SND.on) {
+    SND.ana.getByteFrequencyData(SND.anaData);
+    const bars = 30, bw = specC.width / bars;
+    for (let i = 0; i < bars; i++) {
+      const v = SND.anaData[i + 2] / 255;
+      const h = Math.max(1, v * specC.height);
+      spx.fillStyle = i % 6 === 5
+        ? `rgba(208,51,37,${.3 + v * .6})`
+        : `rgba(70,232,220,${.25 + v * .6})`;
+      spx.fillRect(i * bw + 1, specC.height - h, bw - 2, h);
+    }
+  }
+  requestAnimationFrame(specDraw);
+})();
+
+/* ---------- 滚动色差：画面一动，标题信号偏移 ---------- */
+let rollT = 0;
+addEventListener("scroll", () => {
+  document.body.classList.add("rolling");
+  clearTimeout(rollT);
+  rollT = setTimeout(() => document.body.classList.remove("rolling"), 150);
+}, { passive: true });
+
+/* G 键 = 手动触发故障事件 */
+addEventListener("keydown", e => {
+  if (e.key === "g" || e.key === "G") doGlitch();
+});
+
+/* ---------- HUD 坐标读数 ---------- */
+const hud = document.getElementById("hud-read");
+addEventListener("mousemove", e => {
+  const h = document.documentElement;
+  const sc = Math.min(100, scrollY / Math.max(1, h.scrollHeight - innerHeight) * 100).toFixed(0);
+  hud.innerHTML = `POS ${String(Math.round(e.clientX)).padStart(4, "0")}:${String(Math.round(e.clientY)).padStart(4, "0")}<br>SCROLL ${String(sc).padStart(3, "0")}%<br>SYS.OK ▮`;
+}, { passive: true });
+addEventListener("scroll", () => {
+  const h = document.documentElement;
+  const sc = Math.min(100, scrollY / Math.max(1, h.scrollHeight - innerHeight) * 100).toFixed(0);
+  hud.innerHTML = `POS ----:----<br>SCROLL ${String(sc).padStart(3, "0")}%<br>SYS.OK ▮`;
+}, { passive: true });
+
+/* ---------- 标题乱码解码（周期性） ---------- */
+const SCR_CH = "!<>-_\\/[]{}—=+*^?#01";
+function scramble(el) {
+  if (!el || el.children.length) return;
+  const txt = el.dataset.t || el.textContent;
+  let i = 0;
+  const iv = setInterval(() => {
+    el.textContent = txt.split("").map((ch, k) =>
+      k < i || ch === " " ? ch : SCR_CH[Math.random() * SCR_CH.length | 0]).join("");
+    i += 2;
+    if (i > txt.length + 2) { el.textContent = txt; clearInterval(iv); }
+  }, 26);
+}
+const scrEls = [...document.querySelectorAll(".g-title[data-t]")];
+scrEls.forEach((el, i) => setTimeout(() => scramble(el), 1500 + i * 700));
+setInterval(() => {
+  if (detail.classList.contains("open")) return;
+  scramble(scrEls[Math.random() * scrEls.length | 0]);
+}, 5500);
+
+/* ---------- 快速滚动 → 画面闪烁偏斜 ---------- */
+let lastSc = scrollY, flickT = 0;
+addEventListener("scroll", () => {
+  const v = Math.abs(scrollY - lastSc); lastSc = scrollY;
+  if (v > 130 && Date.now() - flickT > 750) {
+    flickT = Date.now();
+    document.body.classList.add("flick");
+    sfx.whoosh();
+    setTimeout(() => document.body.classList.remove("flick"), 200);
+  }
+}, { passive: true });
+
+/* ---------- 详情封面 3D 倾斜 ---------- */
+const dwrap = document.querySelector(".d-visual-wrap");
+dwrap.addEventListener("mousemove", e => {
+  const r = dwrap.getBoundingClientRect();
+  const ry = ((e.clientX - r.left) / r.width - .5) * 10;
+  const rxx = -((e.clientY - r.top) / r.height - .5) * 8;
+  dwrap.style.transform = `perspective(900px) rotateY(${ry}deg) rotateX(${rxx}deg)`;
+});
+dwrap.addEventListener("mouseleave", () => { dwrap.style.transform = ""; });
+</script>
+</body>
+</html>

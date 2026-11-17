@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreamy Star River · 星河梦 — 交互演示</title>
+<style>
+  :root { --neon:#64ffdc; --pink:#ffb4ff; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a19; overflow:hidden; font-family:Consolas,monospace; cursor:crosshair; }
+  canvas { display:block; }
+  .hud {
+    position:fixed; top:18px; left:22px; z-index:10;
+    color:var(--neon); font-size:13px; letter-spacing:4px; pointer-events:none;
+    text-shadow:0 0 12px rgba(100,255,220,.5);
+  }
+  .hud small { display:block; margin-top:6px; color:var(--pink); font-size:10px; letter-spacing:3px; opacity:.85; }
+  .hint {
+    position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:10;
+    color:rgba(255,255,255,.45); font-size:10px; letter-spacing:3px; pointer-events:none; white-space:nowrap;
+  }
+  .hint b { color:var(--neon); font-weight:400; }
+</style>
+</head>
+<body>
+<div class="hud">DREAMY STAR RIVER <small>星河梦 — PROCESSING 粒子系统 · 网页移植版</small></div>
+<div class="hint"><b>移动鼠标</b> 粒子被吸引并环绕 &nbsp;·&nbsp; <b>SPACE</b> 重置粒子群</div>
+<canvas id="c"></canvas>
+<script>
+/* Dreamy Star River —— Processing 原作 JS 移植
+   原作：CosmicOrbitalParticle 粒子系统（袁上恒 2024001114 · 开源编程基础）
+   忠实还原：HSB 色彩 / 四层粒子 / galaxyMotion 波场 + 向心力 / orbitMouse 轨道交互 / 旋转光环 */
+const cv = document.getElementById("c");
+const ctx = cv.getContext("2d");
+let W, H;
+function fit() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+fit(); addEventListener("resize", fit);
+
+const TOTAL = 2400;
+let particles = [], time = 0;
+const mouse = { x: -9999, y: -9999 };
+addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+addEventListener("touchmove", e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, { passive: true });
+
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function map(v, a1, b1, a2, b2) { return a2 + (v - a1) * (b2 - a2) / (b1 - a1); }
+function dist(x, y, x2, y2) { return Math.sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2)); }
+
+/* Processing HSB(h,360 s,100 v,100 a) → CSS hsla */
+function hsb(h, s, v, a) {
+  h = ((h % 360) + 360) % 360;
+  s = s / 100; v = v / 100;
+  const l = v * (1 - s / 2);
+  const sat = (l === 0 || l === 1) ? 0 : ((v - l) / Math.min(l, 1 - l)) * 100;
+  return `hsla(${h},${sat}%,${l * 100}%,${a / 100})`;
+}
+
+class CosmicOrbitalParticle {
+  constructor() {
+    this.x = rnd(-W / 2, W / 2);
+    this.y = rnd(-H / 2, H / 2);
+    this.vx = rnd(-0.45, 0.45);
+    this.vy = rnd(-0.45, 0.45);
+    const layer = Math.floor(Math.random() * 4);
+    if (layer === 0)      { this.size = rnd(1.0, 2.0);  this.orbitSpeed = rnd(0.10, 0.15); this.orbitRange = rnd(70, 170); }
+    else if (layer === 1) { this.size = rnd(2.3, 4.2);  this.orbitSpeed = rnd(0.06, 0.11); this.orbitRange = rnd(170, 290); }
+    else if (layer === 2) { this.size = rnd(4.5, 7.0);  this.orbitSpeed = rnd(0.03, 0.08); this.orbitRange = rnd(290, 410); }
+    else                  { this.size = rnd(7.2, 10.5); this.orbitSpeed = rnd(0.01, 0.05); this.orbitRange = rnd(410, 560); }
+    this.orbitDir = Math.random() > 0.5 ? 1 : -1;
+    this.hue = rnd(30, 60);
+    this.offset = rnd(180);
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    this.vx *= 0.94; this.vy *= 0.94;
+    if (this.x > W / 2) this.x = -W / 2;
+    if (this.x < -W / 2) this.x = W / 2;
+    if (this.y > H / 2) this.y = -H / 2;
+    if (this.y < -H / 2) this.y = H / 2;
+  }
+  galaxyMotion() {
+    this.vx += Math.cos(time + this.x * 0.007 + this.offset) * 0.12;
+    this.vy += Math.sin(time + this.y * 0.007 + this.offset) * 0.12;
+    const force = map(dist(this.x, this.y, 0, 0), 0, W / 2, 0.02, 0);
+    this.vx -= this.x * force;
+    this.vy -= this.y * force;
+  }
+  orbitMouse() {
+    const mx = mouse.x - W / 2, my = mouse.y - H / 2;
+    const dx = mx - this.x, dy = my - this.y;
+    const dis = Math.sqrt(dx * dx + dy * dy);
+    if (dis < this.orbitRange && dis > 0.001) {
+      const rotX = -dy * this.orbitSpeed * this.orbitDir;
+      const rotY =  dx * this.orbitSpeed * this.orbitDir;
+      this.vx += dx / dis * 0.16 + rotX;
+      this.vy += dy / dis * 0.16 + rotY;
+    }
+  }
+  display() {
+    const dh = (this.hue + time * 38 + dist(this.x, this.y, 0, 0) * 0.5) % 360;
+    const sat = map(this.size, 1, 10.5, 75, 95);
+    ctx.fillStyle = hsb(dh, sat, 100, 80);
+    ctx.beginPath();
+    ctx.arc(this.x + W / 2, this.y + H / 2, this.size / 2, 0, Math.PI * 2);
+    ctx.fill();
+    if (this.size > 4) {
+      ctx.fillStyle = hsb(dh, sat, 100, 28);
+      ctx.beginPath();
+      ctx.arc(this.x + W / 2, this.y + H / 2, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+function seed() { particles = Array.from({ length: TOTAL }, () => new CosmicOrbitalParticle()); }
+seed();
+addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); seed(); } });
+addEventListener("click", seed);
+
+function drawRing() {
+  const baseRadius = map(Math.sin(time * 1.6), -1, 1, 130, 250);
+  const ringHue = (time * 45) % 360;
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(time * 0.9);
+  for (let angle = 0; angle < 360; angle += 10) {
+    const px = Math.cos(angle * Math.PI / 180) * baseRadius;
+    const py = Math.sin(angle * Math.PI / 180) * baseRadius;
+    ctx.fillStyle = hsb(ringHue + angle * 0.7, 85, 100, 65);
+    ctx.beginPath();
+    ctx.arc(px, py, 1.25, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function loop() {
+  ctx.fillStyle = hsb(0, 0, 0, 7);
+  ctx.fillRect(0, 0, W, H);
+  time += 0.0085;
+  drawRing();
+  for (const p of particles) { p.update(); p.orbitMouse(); p.galaxyMotion(); p.display(); }
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

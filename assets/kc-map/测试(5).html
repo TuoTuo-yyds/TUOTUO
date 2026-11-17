@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- 文档类型声明 -->
+    <meta charset="UTF-8">
+    <!-- 视口设置，确保在移动设备上正确显示 -->
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no, width=device-width">
+    <!-- 网站图标，使用SVG格式的面条图标 -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='50%25' font-size='80' text-anchor='middle' dominant-baseline='middle'%3E🍜%3C/text%3E%3C/svg%3E" type="image/svg+xml">
+    <!-- 网页标题 -->
+    <title>武汉美食地图 | 江城寻味 · 图层专属弹窗</title>
+    <!-- Mapbox GL JS 样式与库，用于地图显示 -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+    <!-- 样式定义 -->
+    <style>
+        /* ============================================
+           全局重置 & 基础字体 (美观提升)
+           ============================================ */
+        /* 全局重置，消除默认边距和内边距 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面基础样式 */
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden; /* 隐藏滚动条 */
+            height: 100vh; /* 全屏高度 */
+            color: #1e2a3a;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* 渐变背景 */
+            position: relative;
+        }
+        
+        /* 装饰性背景元素，添加图案纹理 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+            z-index: -1; /* 置于底层 */
+        }
+
+        /* 地图容器 - 全屏沉浸 */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* 确保地图在底层 */
+        }
+
+        /* ============================================
+           现代毛玻璃导航栏 (美观 + 功能性)
+           ============================================ */
+        /* 毛玻璃导航栏样式 */
+        .glass-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 20; /* 确保导航栏在最上层 */
+            background: rgba(20, 20, 28, 0.75); /* 半透明背景 */
+            backdrop-filter: blur(16px) saturate(180%); /* 毛玻璃效果 */
+            -webkit-backdrop-filter: blur(16px); /* Safari 兼容 */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* 底部边框 */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+            transition: all 0.3s ease; /* 过渡动画 */
+        }
+
+        /* 导航栏容器 */
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* Logo 与 品牌区 */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #FFE6B0, #FFB347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent; /* 渐变文字效果 */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            cursor: pointer; /* 鼠标悬停为指针 */
+            transition: transform 0.2s; /* 缩放动画 */
+        }
+        /* 品牌区悬停效果 */
+        .nav-brand:hover {
+            transform: scale(1.02); /* 轻微放大 */
+        }
+        /* 品牌区图标样式 */
+        .nav-brand span {
+            font-size: 1.7rem;
+        }
+        /* 品牌文字样式 */
+        .brand-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #F9D976, #F39F86);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent; /* 渐变文字效果 */
+        }
+
+        /* 导航菜单列表 */
+        .nav-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 导航菜单项样式 */
+        .nav-item {
+            position: relative;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 2px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* 导航菜单项图标样式 */
+        .nav-item i {
+            margin-right: 8px;
+            font-style: normal;
+            display: inline-block;
+            font-size: 1.1rem;
+        }
+
+        /* 导航菜单项悬停效果 */
+        .nav-item:hover {
+            background: rgba(255, 180, 70, 0.9);
+            color: #1e1e2a;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 180, 70, 0.5);
+        }
+
+        /* 导航菜单项点击效果 */
+        .nav-item:active {
+            transform: translateY(1px);
+        }
+
+        /* 高亮活动菜单 (点击后短暂闪烁效果) */
+        .nav-item.active-pulse {
+            background: #FFB347;
+            color: #1e2a2e;
+            box-shadow: 0 0 20px rgba(255, 180, 70, 0.8);
+            border-color: #FFB347;
+            animation: pulse 0.8s ease-in-out;
+        }
+
+        /* 脉冲动画效果，用于导航菜单项点击时 */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 180, 70, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 180, 70, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 180, 70, 0);
+            }
+        }
+        
+        /* 淡入上移动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 浮动动画效果，用于装饰元素 */
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        /* 发光动画效果 */
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 180, 70, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 180, 70, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 180, 70, 0.5);
+            }
+        }
+
+        /* 美食导航按钮 */
+        .food-nav-toggle {
+            position: fixed;
+            top: 100px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(255, 180, 70, 0.9);
+            color: #1e2a3a;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 美食导航按钮悬停效果 */
+        .food-nav-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 160, 50, 0.9);
+        }
+        
+        /* 美食图片导航栏 */
+        .food-nav {
+            position: fixed;
+            top: 100px;
+            left: -350px; /* 默认隐藏 */
+            z-index: 18;
+            background: rgba(20, 20, 28, 0.9);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 300px;
+            max-height: 70vh; /* 限制高度 */
+            overflow-y: auto; /* 启用滚动 */
+            transition: left 0.4s ease; /* 滑入滑出动画 */
+        }
+        
+        /* 自定义滚动条 */
+        .food-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .food-nav::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .food-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 180, 70, 0.5);
+            border-radius: 10px;
+        }
+        
+        .food-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 180, 70, 0.8);
+        }
+        
+        /* 美食导航栏显示状态 */
+        .food-nav.active {
+            left: 20px; /* 显示位置 */
+        }
+        
+        .food-nav h3 {
+            margin: 0 0 15px 0;
+            color: #FFB347;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .food-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .food-item:hover {
+            background: rgba(255, 180, 70, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .food-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .food-info h4 {
+            margin: 0 0 4px 0;
+            color: #FFB347;
+            font-size: 0.9rem;
+        }
+        
+        .food-info p {
+            margin: 0;
+            color: #ccc;
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+        
+        /* 右侧辅助 (可放额外信息) */
+        .nav-tip {
+            font-size: 0.75rem;
+            background: rgba(0,0,0,0.5);
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            color: #FFE0A3;
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+        }
+
+        /* ============================================
+           图例面板 (右下角优雅升级)
+           ============================================ */
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(20, 20, 28, 0.9);
+            backdrop-filter: blur(16px);
+            padding: 16px 24px;
+            border-radius: 28px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+            font-size: 13px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            color: #f0f0f0;
+        }
+        .legend:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        }
+        .legend h4 {
+            margin: 0 0 12px 0;
+            font-size: 1.1rem;
+            color: #FFB347;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .legend-item:hover .legend-color {
+            transform: scale(1.2);
+            box-shadow: 0 0 12px rgba(255, 180, 70, 0.6);
+        }
+        .legend-text {
+            color: #ececec;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        .legend-item:hover .legend-text {
+            color: #FFB347;
+        }
+
+        /* 店铺信息侧边栏 */
+        .shop-sidebar {
+            position: fixed;
+            top: 80px;
+            right: -400px;
+            width: 380px;
+            max-height: calc(100vh - 100px);
+            background: rgba(20, 20, 28, 0.95);
+            backdrop-filter: blur(16px);
+            border-radius: 20px 0 0 20px;
+            box-shadow: -4px 0 30px rgba(0, 0, 0, 0.4);
+            z-index: 15;
+            transition: right 0.4s ease;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .shop-sidebar.active {
+            right: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 180, 70, 0.1);
+        }
+        .sidebar-header h3 {
+            margin: 0;
+            color: #FFB347;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .close-sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        .close-sidebar:hover {
+            background: rgba(255, 100, 100, 0.5);
+            transform: rotate(90deg);
+        }
+        .sidebar-content {
+            padding: 15px;
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+        }
+        .shop-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .shop-item:hover {
+            background: rgba(255, 180, 70, 0.15);
+            border-color: rgba(255, 180, 70, 0.3);
+            transform: translateX(-5px);
+        }
+        .shop-item h4 {
+            margin: 0 0 8px 0;
+            color: #FFB347;
+            font-size: 1rem;
+        }
+        .shop-item p {
+            margin: 4px 0;
+            color: #ccc;
+            font-size: 0.85rem;
+        }
+        .shop-item .shop-tag {
+            display: inline-block;
+            background: rgba(255, 180, 70, 0.2);
+            color: #FFB347;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+        }
+
+        /* 自定义弹出层微调 (地图popup默认样式优化) */
+        .mapboxgl-popup-content {
+            border-radius: 24px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 245, 0.98);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 180, 70, 0.6);
+            font-family: 'Segoe UI', system-ui;
+            max-width: 320px;
+            transition: all 0.3s ease;
+        }
+        .mapboxgl-popup-content:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            transform: translateY(-2px);
+        }
+        .mapboxgl-popup-tip {
+            border-top-color: rgba(255, 245, 220, 0.98);
+            border-width: 10px;
+        }
+        .mapboxgl-popup-close-button {
+            font-size: 24px;
+            color: #999;
+            transition: all 0.3s ease;
+        }
+        .mapboxgl-popup-close-button:hover {
+            color: #333;
+            transform: rotate(90deg);
+        }
+
+        /* 响应式: 移动端导航优化 */
+        @media (max-width: 780px) {
+            .nav-container {
+                padding: 0.6rem 1rem;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-menu {
+                justify-content: space-between;
+                gap: 0.2rem;
+            }
+            .nav-item {
+                padding: 0.4rem 0.9rem;
+                font-size: 0.8rem;
+            }
+            .brand-text {
+                font-size: 1rem;
+            }
+            .info-note {
+                top: 110px;
+                font-size: 10px;
+                left: 12px;
+                right: auto;
+            }
+            .legend {
+                bottom: 16px;
+                right: 16px;
+                padding: 8px 14px;
+            }
+            .legend h4 {
+                font-size: 0.8rem;
+            }
+            .legend-text {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .nav-item {
+                padding: 0.3rem 0.7rem;
+                font-size: 0.7rem;
+            }
+            .nav-tip {
+                display: none;
+            }
+            .info-note {
+                top: 100px;
+            }
+        }
+
+        /* 微滚动条 & 辅助 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFB347;
+            border-radius: 8px;
+        }
+
+        /* 地图加载完成前的优雅占位 */
+        body:before {
+            content: "🍜 载入江城味道...";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            color: #ffc285;
+            padding: 12px 24px;
+            border-radius: 48px;
+            font-size: 14px;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        body.map-loaded:before {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        /* 装饰性漂浮元素 */
+        .floating-decoration {
+            position: fixed;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-decoration:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            font-size: 40px;
+            animation-delay: 0s;
+        }
+        
+        .floating-decoration:nth-child(2) {
+            top: 60%;
+            right: 15%;
+            font-size: 30px;
+            animation-delay: 2s;
+        }
+        
+        .floating-decoration:nth-child(3) {
+            top: 80%;
+            left: 20%;
+            font-size: 25px;
+            animation-delay: 4s;
+        }
+        
+        /* 背景样式 */
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            height: 100vh;
+            color: #1e2a3a;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+        }
+        
+        /* 装饰性背景图案 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></svg>');
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* 美食图片装饰 */
+        .food-image {
+            position: fixed;
+            z-index: 100;
+            pointer-events: none;
+            animation: float 8s ease-in-out infinite;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .food-image-1 {
+            top: 15%;
+            left: 5%;
+            width: 120px;
+            height: 120px;
+            background-image: url('1.png');
+            animation-delay: 0.3s;
+        }
+        
+        .food-image-2 {
+            top: 35%;
+            left: 8%;
+            width: 100px;
+            height: 100px;
+            background-image: url('2.png');
+            animation-delay: 1.2s;
+        }
+        
+        .food-image-3 {
+            top: 55%;
+            left: 6%;
+            width: 110px;
+            height: 110px;
+            background-image: url('3.png');
+            animation-delay: 2.1s;
+        }
+        
+        .food-image-4 {
+            top: 75%;
+            left: 9%;
+            width: 90px;
+            height: 90px;
+            background-image: url('4.png');
+            animation-delay: 3.0s;
+        }
+        
+        .food-image-5 {
+            top: 25%;
+            left: 12%;
+            width: 105px;
+            height: 105px;
+            background-image: url('83c97d4ec8fe018c2bdf8a2b1ed64415c5898c27ee364-IGeIUc.png');
+            animation-delay: 3.9s;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 地图容器，用于显示Mapbox地图 -->
+    <div id="map"></div>
+    
+    <!-- 装饰性漂浮元素，增加页面活力 -->
+    <div class="floating-decoration">🍜</div>
+    <div class="floating-decoration">🥟</div>
+    <div class="floating-decoration">🍽️</div>
+    
+    <!-- 美食导航切换按钮，点击显示/隐藏美食导航栏 -->
+    <button class="food-nav-toggle">🍜</button>
+    
+    <!-- 美食图片导航栏，包含各种美食的图片和介绍 -->
+    <div class="food-nav">
+        <!-- 导航栏标题 -->
+        <h3>🍜 武汉特色美食</h3>
+        
+        <div class="food-item" data-food-type="过早经典">
+            <div class="food-img" style="background-image: url('1.png');"></div>
+            <div class="food-info">
+                <h4>糯米包油条</h4>
+                <p>武汉传统早点，软糯的糯米包裹酥脆的油条，口感层次丰富，是武汉人喜爱的早餐选择。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="过早经典">
+            <div class="food-img" style="background-image: url('2.png');"></div>
+            <div class="food-info">
+                <h4>欢喜坨</h4>
+                <p>武汉传统早点，外酥内软，表面撒满芝麻，口感香甜，是武汉街头常见的美食。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="烟火夜市">
+            <div class="food-img" style="background-image: url('3.png');"></div>
+            <div class="food-info">
+                <h4>生煎包</h4>
+                <p>底部煎至金黄酥脆，顶部松软，内馅鲜美多汁，是武汉夜市的热门美食。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="宝藏小吃">
+            <div class="food-img" style="background-image: url('4.png');"></div>
+            <div class="food-info">
+                <h4>热干面</h4>
+                <p>武汉最具代表性的小吃，面条筋道，配上芝麻酱、葱花等调料，香气四溢。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="全部店铺">
+            <div class="food-img" style="background-image: url('11.png');"></div>
+            <div class="food-info">
+                <h4>烤肉串</h4>
+                <p>武汉夜市的经典美食，肉质鲜嫩，调味独特，是夜宵的绝佳选择。</p>
+            </div>
+        </div>
+        
+        <!-- 新增美食 -->
+        <div class="food-item" data-food-type="宝藏小吃">
+            <div class="food-img" style="background-image: url('5.png');"></div>
+            <div class="food-info">
+                <h4>螺蛳粉</h4>
+                <p>广西特色小吃，酸辣鲜香，汤底浓郁，是武汉街头受欢迎的美食。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="宝藏小吃">
+            <div class="food-img" style="background-image: url('6.png');"></div>
+            <div class="food-info">
+                <h4>重庆小面</h4>
+                <p>重庆特色面食，麻辣鲜香，面条劲道，是武汉美食中的辣味代表。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="八方风味">
+            <div class="food-img" style="background-image: url('7.png');"></div>
+            <div class="food-info">
+                <h4>桂林米粉</h4>
+                <p>广西桂林特色，米粉细腻，汤头鲜美，是武汉美食中的南方风味。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="过早经典">
+            <div class="food-img" style="background-image: url('8.png');"></div>
+            <div class="food-info">
+                <h4>面窝</h4>
+                <p>武汉传统早点，外酥内软，口感独特，是武汉人早餐的经典选择。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="八方风味">
+            <div class="food-img" style="background-image: url('9.png');"></div>
+            <div class="food-info">
+                <h4>武昌鱼</h4>
+                <p>武汉特色名菜，肉质鲜嫩，味道鲜美，是武汉美食的代表之一。</p>
+            </div>
+        </div>
+        
+        <div class="food-item" data-food-type="八方风味">
+            <div class="food-img" style="background-image: url('10.png');"></div>
+            <div class="food-info">
+                <h4>莲藕排骨汤</h4>
+                <p>湖北特色汤品，藕香浓郁，排骨酥烂，是武汉人喜爱的养生美食。</p>
+            </div>
+        </div>
+    </div>
+    
+
+
+    <!-- 毛玻璃导航栏，用于快速定位不同类型的美食店铺 -->
+    <nav class="glass-nav">
+        <div class="nav-container">
+            <!-- 品牌区域，点击可重置地图视图 -->
+            <div class="nav-brand" id="resetViewBtn">
+                <span class="brand-text">江城寻味 · 武汉美食地图</span>
+            </div>
+            <!-- 导航菜单，包含不同类型的美食店铺 -->
+            <ul class="nav-menu">
+                <!-- 全部店铺导航项 -->
+                <li class="nav-item" data-focus="all" data-name="全部店铺">
+                    <i>🗺️</i> 全部店铺
+                </li>
+                <!-- 过早经典导航项，包含经纬度信息 -->
+                <li class="nav-item" data-focus="timehonored" data-lng="114.2905" data-lat="30.5809" data-name="过早经典">
+                    <i>🏮</i> 过早经典
+                </li>
+                <!-- 八方风味导航项，包含经纬度信息 -->
+                <li class="nav-item" data-focus="chucai" data-lng="114.2900" data-lat="30.5820" data-name="八方风味">
+                    <i>🍽️</i> 八方风味
+                </li>
+                <!-- 烟火夜市导航项，包含经纬度信息 -->
+                <li class="nav-item" data-focus="nightmarket" data-lng="114.2950" data-lat="30.5780" data-name="烟火夜市">
+                    <i>🌙</i> 烟火夜市
+                </li>
+                <!-- 宝藏小吃导航项，包含经纬度信息 -->
+                <li class="nav-item" data-focus="snacks" data-lng="114.2880" data-lat="30.5790" data-name="宝藏小吃">
+                    <i>🥟</i> 宝藏小吃
+                </li>
+            </ul>
+            <!-- 导航提示信息 -->
+            <div class="nav-tip">
+                ✨ 点击地标查看详情 · 双击导航项开始路线
+            </div>
+        </div>
+    </nav>
+
+    <!-- 地图图例，显示不同类型店铺的颜色标识 -->
+    <div class="legend">
+        <h4>🍜 武汉美食图鉴 · 图层风物志</h4>
+        <!-- 过早经典店铺图例 -->
+        <div class="legend-item"><div class="legend-color" style="background: #E67E22;"></div><div class="legend-text">老字号·过早经典</div></div>
+        <!-- 八方风味店铺图例 -->
+        <div class="legend-item"><div class="legend-color" style="background: #2ECC71;"></div><div class="legend-text">八方风味·外地美食</div></div>
+        <!-- 烟火夜市店铺图例 -->
+        <div class="legend-item"><div class="legend-color" style="background: #E74C3C;"></div><div class="legend-text">烟火夜市·深夜食堂</div></div>
+        <!-- 宝藏小吃店铺图例 -->
+        <div class="legend-item"><div class="legend-color" style="background: #9B59B6;"></div><div class="legend-text">特色小吃·宝藏店铺</div></div>
+    </div>
+
+    <!-- 店铺信息侧边栏，用于显示店铺列表 -->
+    <div class="shop-sidebar" id="shopSidebar">
+        <!-- 侧边栏头部，包含标题和关闭按钮 -->
+        <div class="sidebar-header">
+            <h3 id="sidebarTitle">店铺列表</h3>
+            <button class="close-sidebar" id="closeSidebar">✕</button>
+        </div>
+        <!-- 侧边栏内容区域，用于动态显示店铺列表 -->
+        <div class="sidebar-content" id="sidebarContent">
+        </div>
+    </div>
+
+
+    <script>
+        // ============================================================
+        // 1. 初始化地图 (使用有效token + 武汉中心，明亮街道底图)
+        // ============================================================
+        // 设置Mapbox访问令牌
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZmhkNjc4NSIsImEiOiJjbW43NTBsMDYwY2oyMzBwcjliYTJneGJ3In0.cFySUE7_3MlYHAua4q3lfQ';
+        
+        // 创建地图实例
+        const map = new mapboxgl.Map({
+            container: 'map', // 地图容器ID
+            center: [114.3055, 30.5931], // 武汉中心坐标
+            zoom: 11.5, // 初始缩放级别
+            style: 'mapbox://styles/mapbox/streets-v12', // 地图样式
+            pitch: 0, // 俯仰角
+            bearing: 0, // 方位角
+            interactive: true // 启用交互
+        });
+
+        // 全局变量：保存用户当前选择的店铺类型
+        let currentSelectedType = 'all';
+        
+        // 加载所有图层的函数
+        function loadAllLayers() {
+            // 老字号店铺图层
+            addPointLayer('wuhan_timehonored_layer', timehonoredPoints, '#E67E22', 9);
+            // 正餐店铺图层
+            addPointLayer('wuhan_chucai_layer', chucaiPoints, '#2ECC71', 8.5);
+            // 夜市店铺图层
+            addPointLayer('wuhan_nightmarket_layer', nightMarketPoints, '#E74C3C', 9);
+            // 小吃店铺图层
+            addPointLayer('wuhan_snacks_layer', snackPoints, '#9B59B6', 8);
+        }
+
+        // ============================================================
+        // 2. 定义图层与弹窗规则 (差异化核心)
+        // ============================================================
+        // 图层字段规则数组，定义不同图层的弹窗模板
+        const layerFieldRules = [
+            {
+                // 老字号店铺图层规则
+                match: (layerId) => layerId === 'wuhan_timehonored_layer',
+                popupTemplate: (props) => {
+                    const name = props.shopName || '老字号店铺';
+                    const year = props.establishedYear || '年代悠久';
+                    const signature = props.signatureDish || '经典味道';
+                    const addr = props.address || '武汉老巷';
+                    const heritage = props.heritageInfo || '江城饮食文化瑰宝';
+                    return `
+                        <div style="min-width: 210px; font-family: system-ui;">
+                            <strong style="font-size: 1.1rem; color: #E67E22;">🏮 ${name}</strong>
+                            <hr style="margin: 5px 0; background:#E67E22; height:1px;">
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">📅 创立于：</span>${year}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">🍜 招牌美食：</span>${signature}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">📍 地址：</span>${addr}</p>
+                            <p style="margin: 6px 0; color:#b85c00;"><span style="font-weight:600;">✨ 传承：</span>${heritage}</p>
+                            <small style="color: gray;">🔔 百年匠心 · 武汉味道</small>
+                        </div>
+                    `;
+                }
+            },
+            {
+                // 八方风味店铺图层规则
+                match: (layerId) => layerId === 'wuhan_chucai_layer',
+                popupTemplate: (props) => {
+                    const name = props.restaurantName || '外地美食';
+                    const cuisine = props.cuisineType || '地道湖北菜';
+                    const dishes = props.recommendedDishes || '清蒸武昌鱼、排骨藕汤';
+                    const addr = props.address || '武汉市区';
+                    const price = props.priceLevel || '人均 ¥60-100';
+                    return `
+                        <div style="min-width: 210px;">
+                            <strong style="font-size: 1.05rem; color: #2C3E50;">🍽️ ${name}</strong>
+                            <hr style="margin: 5px 0; background:#2ECC71; height:1px;">
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">🥢 菜系风味：</span>${cuisine}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">⭐ 推荐菜：</span>${dishes}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">📍 地址：</span>${addr}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">💰 消费参考：</span>${price}</p>
+                            <small>🔥 江城楚韵 · 宴客好味</small>
+                        </div>
+                    `;
+                }
+            },
+            {
+                // 夜市店铺图层规则
+                match: (layerId) => layerId === 'wuhan_nightmarket_layer',
+                popupTemplate: (props) => {
+                    const name = props.stallName || '深夜食堂';
+                    const snack = props.specialtySnack || '小龙虾/烧烤';
+                    const time = props.bestTime || '19:00 - 02:00';
+                    const addr = props.address || '武汉夜市街';
+                    const vibe = props.atmosphere || '江湖气息，热闹非凡';
+                    return `
+                        <div style="min-width: 200px;">
+                            <strong style="font-size: 1.05rem; color: #E74C3C;">🌙 ${name}</strong>
+                            <hr style="margin: 5px 0; background:#E74C3C;">
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">🍢 必吃美味：</span>${snack}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">⏰ 烟火时间：</span>${time}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">📍 据点：</span>${addr}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">🎉 氛围：</span>${vibe}</p>
+                            <small>🍻 越夜越美味 · 武汉宵夜江湖</small>
+                        </div>
+                    `;
+                }
+            },
+            {
+                // 小吃店铺图层规则
+                match: (layerId) => layerId === 'wuhan_snacks_layer',
+                popupTemplate: (props) => {
+                    const name = props.snackName || '地道小吃';
+                    const type = props.snackType || '武汉特色';
+                    const tip = props.featureTip || '本地人推荐';
+                    const addr = props.address || '巷子深处';
+                    const priceTag = props.price || '¥5-20';
+                    return `
+                        <div style="min-width: 190px;">
+                            <strong style="font-size: 1rem; color: #8E44AD;">🥟 ${name}</strong>
+                            <hr style="margin: 4px 0; background:#9B59B6;">
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">🍳 品类：</span>${type}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">💡 特色：</span>${tip}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">📍 坐标：</span>${addr}</p>
+                            <p style="margin: 6px 0;"><span style="font-weight:600;">💰 参考价：</span>${priceTag}</p>
+                            <small>✨ 边走边吃 · 地道汉味</small>
+                        </div>
+                    `;
+                }
+            }
+        ];
+
+        // 获取弹窗规则的函数
+        function getPopupRule(layerId) {
+            const rule = layerFieldRules.find(rule => rule.match(layerId));
+            if (!rule) {
+                // 默认弹窗模板
+                return {
+                    popupTemplate: (props) => `<div><strong>🍜 武汉美食</strong><p>${props.name || '地道风味'}</p><p>${props.address || '江城内'}</p></div>`
+                };
+            }
+            return rule;
+        }
+
+        // ============================================================
+        // 3. 武汉美食四类数据 (真实坐标 展现不同图层)
+        // ============================================================
+        // 老字号店铺数据
+        const timehonoredPoints = [
+            { lng: 114.293621, lat: 30.585488, properties: { shopName: "老通城", establishedYear: "1929年", signatureDish: "三鲜豆皮、蛋光豆皮", address: "江岸区大智路/吉庆民俗街", heritageInfo: "武汉老字号，毛主席曾赞誉的'豆皮大王'", popularity: 9 } },
+            { lng: 114.29448, lat: 30.58722, properties: { shopName: "四季美", establishedYear: "1927年", signatureDish: "鲜肉汤包、蟹黄汤包", address: "江汉区中山大道898号", heritageInfo: "武汉老字号，皮薄馅足", popularity: 8 } },
+            { lng: 114.29481, lat: 30.592125, properties: { shopName: "蔡林记", establishedYear: "1930年", signatureDish: "全料热干面、牛肉热干面", address: "江汉区中山大道854号", heritageInfo: "武汉热干面代表品牌，非遗技艺传承", popularity: 10 } },
+            { lng: 114.279458, lat: 30.578081, properties: { shopName: "德华酒楼", establishedYear: "1924年", signatureDish: "德华包子、年糕", address: "江汉区三民路66号", heritageInfo: "武汉老字号，传统汉味小吃", popularity: 7 } },
+            { lng: 114.292762, lat: 30.589449, properties: { shopName: "三镇民生甜食馆", establishedYear: "1956年", signatureDish: "热干面、糊米酒", address: "江岸区合作路(胜利街)", heritageInfo: "武汉过早名店，汉味小吃集合", popularity: 8 } },
+            { lng: 114.266809, lat: 30.577141, properties: { shopName: "谈炎记", establishedYear: "1920年", signatureDish: "水饺、汤圆", address: "硚口区荣华西村4-7号2栋1楼1单元", heritageInfo: "武汉老字号，传统水饺名店", popularity: 6 } },
+            { lng: 114.297079, lat: 30.590389, properties: { shopName: "五芳斋", establishedYear: "1946年", signatureDish: "汤圆、粽子", address: "江岸区大智路.中山大道", heritageInfo: "中华老字号，传统糕点", popularity: 7 } },
+            { lng: 114.29425, lat: 30.59221, properties: { shopName: "王裕兴", establishedYear: "1739年", signatureDish: "煨汤、豆皮", address: "江岸区吉庆民俗街", heritageInfo: "百年老字号，武汉煨汤专家", popularity: 9 } },
+            { lng: 114.291086, lat: 30.588222, properties: { shopName: "何嫂糯米鸡", establishedYear: "1985年", signatureDish: "糯米鸡、油条", address: "江岸区循礼门地铁站", heritageInfo: "武汉过早名店，传统小吃", popularity: 8 } },
+            { lng: 114.2928912, lat: 30.5498265, properties: { shopName: "老谦记", establishedYear: "1918年", signatureDish: "牛肉豆丝、炒豆丝", address: "武昌区户部巷.都府堤", heritageInfo: "武汉老字号，传统小吃", popularity: 7 } },
+            { lng: 114.280233, lat: 30.580369, properties: { shopName: "德润福严氏烧麦", establishedYear: "1988年", signatureDish: "重油烧麦、糊汤粉", address: "江汉区大业路", heritageInfo: "武汉烧麦名店，油润香糯", popularity: 8 } },
+            { lng: 114.287285, lat: 30.580912, properties: { shopName: "顺香居", establishedYear: "1932年", signatureDish: "重油烧麦、糊汤粉", address: "江汉区花楼街337号", heritageInfo: "老武汉烧麦代表，油润香糯", popularity: 7 } },
+            { lng: 114.28468, lat: 30.574024, properties: { shopName: "田启恒鱼汤糊粉", establishedYear: "1930年", signatureDish: "鲜鱼糊汤粉、油条", address: "江汉区花楼街", heritageInfo: "武汉传统小吃，鲜鱼糊汤浓郁", popularity: 6 } },
+            { lng: 114.307379, lat: 30.603879, properties: { shopName: "李记鸡冠饺", establishedYear: "1980年", signatureDish: "鸡冠饺、面窝", address: "江岸区山海关路", heritageInfo: "武汉传统早点，外酥里嫩", popularity: 7 } },
+            { lng: 114.2932814, lat: 30.5467893, properties: { shopName: "曹祥泰", establishedYear: "1884年", signatureDish: "月饼、绿豆糕", address: "武昌区解放路409号", heritageInfo: "中华老字号，传统糕点", popularity: 8 } },
+            { lng: 114.297268, lat: 30.58681, properties: { shopName: "小桃园", establishedYear: "1946年", signatureDish: "瓦罐鸡汤、豆皮", address: "江岸区兰陵路.胜利街", heritageInfo: "武汉老字号，煨汤专家", popularity: 7 } },
+            { lng: 114.286216, lat: 30.575917, properties: { shopName: "福庆和", establishedYear: "1922年", signatureDish: "牛肉粉、热干面", address: "江汉区六渡桥.中山大道", heritageInfo: "武汉老字号，传统面食", popularity: 6 } },
+            { lng: 114.266656, lat: 30.549909, properties: { shopName: "祁万顺", establishedYear: "1930年", signatureDish: "汤包、烧麦", address: "汉阳区汉阳大道", heritageInfo: "武汉老字号，传统小吃", popularity: 5 } },
+            { lng: 114.293952, lat: 30.590751, properties: { shopName: "金汇刘", establishedYear: "1930年", signatureDish: "煨汤、炒菜", address: "江岸区吉庆街", heritageInfo: "武汉老字号，传统鄂菜", popularity: 6 } },
+            { lng: 114.29271, lat: 30.549744, properties: { shopName: "谢荣德面窝", establishedYear: "1930年", signatureDish: "面窝、油条", address: "武昌区户部巷", heritageInfo: "武汉传统早点，外酥里嫩", popularity: 7 } }
+        ];
+        
+        // 八方风味店铺数据
+        const chucaiPoints = [
+            { lng: 114.29087, lat: 30.578509, properties: { restaurantName: "八合里潮汕牛肉火锅", cuisineType: "潮汕牛肉火锅", recommendedDishes: "嫩肉、吊龙、牛筋丸", address: "江汉区江汉路", priceLevel: "人均 ¥80-120", popularity: 9 } },
+            { lng: 114.291823, lat: 30.544672, properties: { restaurantName: "桂林米粉总店", cuisineType: "桂林风味", recommendedDishes: "桂林米粉、卤菜", address: "武昌区粮道街", priceLevel: "人均 ¥20-40", popularity: 7 } },
+            { lng: 114.278652, lat: 30.591234, properties: { restaurantName: "方中山胡辣汤", cuisineType: "河南风味", recommendedDishes: "胡辣汤、水煎包", address: "江汉区江汉一路", priceLevel: "人均 ¥15-30", popularity: 8 } },
+            { lng: 114.291234, lat: 30.583456, properties: { restaurantName: "丰茂烤串", cuisineType: "延边风味", recommendedDishes: "羊肉串、烤鸡翅", address: "江汉区江汉路", priceLevel: "人均 ¥60-100", popularity: 8 } },
+            { lng: 114.287654, lat: 30.590123, properties: { restaurantName: "淮南牛肉汤", cuisineType: "淮南风味", recommendedDishes: "牛肉汤、烧饼", address: "江汉区万松园", priceLevel: "人均 ¥25-45", popularity: 7 } }
+        ];
+        
+        // 夜市店铺数据
+        const nightMarketPoints = [
+            { lng: 114.2926832, lat: 30.5495815, properties: { stallName: "长沙臭豆腐", specialtySnack: "臭豆腐、糖油粑粑", bestTime: "10:00 - 22:00", address: "武昌区户部巷", atmosphere: "传统小吃，香味四溢", popularity: 9 } },
+            { lng: 114.2927834, lat: 30.549789, properties: { stallName: "新疆烤包子", specialtySnack: "烤包子、羊肉串", bestTime: "10:00 - 22:00", address: "武昌区户部巷", atmosphere: "新疆风味，香气扑鼻", popularity: 8 } },
+            { lng: 114.292679, lat: 30.54946, properties: { stallName: "小吕一刀生煎", specialtySnack: "生煎包、锅贴", bestTime: "10:00 - 22:00", address: "武昌区户部巷", atmosphere: "传统小吃，酥脆可口", popularity: 7 } },
+            { lng: 114.29267, lat: 30.549389, properties: { stallName: "毛氏汽水包", specialtySnack: "汽水包、煎包", bestTime: "10:00 - 22:00", address: "武昌区户部巷", atmosphere: "传统小吃，热气腾腾", popularity: 7 } },
+            { lng: 114.2928245, lat: 30.5496245, properties: { stallName: "徐嫂鱼汤糊粉", specialtySnack: "鱼汤糊粉、油条", bestTime: "10:00 - 22:00", address: "武昌区户部巷", atmosphere: "传统小吃，鲜美可口", popularity: 8 } },
+            { lng: 114.269, lat: 30.587, properties: { stallName: "霄汉羊排（万松园一店）", specialtySnack: "羊排、烤串", bestTime: "17:00 - 凌晨2:00", address: "武汉市江汉区万松园街雪松路35号", atmosphere: "夜市氛围，香气扑鼻", popularity: 9 } },
+            { lng: 114.268, lat: 30.586, properties: { stallName: "阿宝生煎包", specialtySnack: "生煎包、锅贴", bestTime: "10:00 - 22:00", address: "武汉市江汉区万松街道雪松路万松园小区37栋3单元一楼", atmosphere: "传统小吃，酥脆可口", popularity: 8 } },
+            { lng: 114.290, lat: 30.588, properties: { stallName: "吉庆街夜市大排档", specialtySnack: "各类烧烤、小吃", bestTime: "17:00 - 凌晨3:00", address: "武汉市江岸区吉庆街144号", atmosphere: "夜市氛围，热闹非凡", popularity: 9 } }
+        ];
+        
+        // 小吃店铺数据
+        const snackPoints = [
+            { lng: 114.265432, lat: 30.582345, properties: { snackName: "东方宫兰州牛肉面", snackType: "兰州风味", featureTip: "清汤牛肉面、牛肉饼", address: "硚口区武胜路", price: "¥15-30", popularity: 8 } },
+            { lng: 114.334527, lat: 30.507182, properties: { snackName: "柳州螺蛳粉总店", snackType: "柳州风味", featureTip: "螺蛳粉、炸蛋", address: "洪山区虎泉街", price: "¥15-25", popularity: 9 } },
+            { lng: 114.289234, lat: 30.584321, properties: { snackName: "秦见面", snackType: "陕西风味", featureTip: "肉夹馍、凉皮", address: "江汉区江汉路", price: "¥15-25", popularity: 7 } },
+            { lng: 114.290123, lat: 30.589876, properties: { snackName: "回味鸭血粉丝", snackType: "南京风味", featureTip: "鸭血粉丝汤、小笼包", address: "江汉区江汉路", price: "¥15-30", popularity: 7 } },
+            { lng: 114.289765, lat: 30.590234, properties: { snackName: "重庆小面", snackType: "重庆风味", featureTip: "麻辣小面、豌杂面", address: "江汉区江汉路", price: "¥12-20", popularity: 8 } },
+            { lng: 114.287123, lat: 30.590234, properties: { snackName: "南昌拌粉", snackType: "南昌风味", featureTip: "拌粉、瓦罐汤", address: "江汉区万松园", price: "¥15-25", popularity: 6 } },
+            { lng: 114.293157, lat: 30.580005, properties: { snackName: "秋林里道斯", snackType: "哈尔滨风味", featureTip: "红肠、大列巴", address: "江汉区江汉路", price: "¥20-40", popularity: 7 } },
+            { lng: 114.279099, lat: 30.582084, properties: { snackName: "严老幺", snackType: "武汉风味", featureTip: "烧麦、豆皮", address: "江汉区自治街", price: "¥8-15", popularity: 9 } }
+        ];
+
+        // 添加点图层的函数
+        function addPointLayer(layerId, dataPoints, color, radius = 8) {
+            const sourceId = `${layerId}_source`;
+            const circleLayerId = `${layerId}_circle`;
+            const extrusionLayerId = `${layerId}_extrusion`;
+            const labelLayerId = `${layerId}_label`;
+            
+            // 确定名称属性
+            let nameProperty = 'name';
+            if (layerId === 'wuhan_timehonored_layer') nameProperty = 'shopName';
+            else if (layerId === 'wuhan_chucai_layer') nameProperty = 'restaurantName';
+            else if (layerId === 'wuhan_nightmarket_layer') nameProperty = 'stallName';
+            else if (layerId === 'wuhan_snacks_layer') nameProperty = 'snackName';
+            
+            // 为2D状态创建点数据源
+            const pointGeojson = {
+                type: 'FeatureCollection',
+                features: dataPoints.map(p => ({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+                    properties: {
+                        ...p.properties,
+                        // 确保热门度属性存在，默认为5
+                        popularity: p.properties.popularity || 5
+                    }
+                }))
+            };
+            
+            // 将点转换为圆形多边形，用于创建3D圆柱
+            function pointToCircle(lng, lat, radiusMeters) {
+                const segments = 32;
+                const coords = [];
+                const earthRadius = 6371000;
+                const angleStep = (Math.PI * 2) / segments;
+                
+                for (let i = 0; i < segments; i++) {
+                    const angle = i * angleStep;
+                    const deltaLng = (radiusMeters / earthRadius) * (180 / Math.PI) / Math.cos(lat * Math.PI / 180);
+                    const deltaLat = (radiusMeters / earthRadius) * (180 / Math.PI);
+                    const newLng = lng + deltaLng * Math.cos(angle);
+                    const newLat = lat + deltaLat * Math.sin(angle);
+                    coords.push([newLng, newLat]);
+                }
+                
+                // 闭合多边形
+                coords.push(coords[0]);
+                return coords;
+            }
+            
+            // 为3D状态创建多边形数据源
+            const polygonGeojson = {
+                type: 'FeatureCollection',
+                features: dataPoints.map(p => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [pointToCircle(p.lng, p.lat, 10)] // 10米半径的圆
+                    },
+                    properties: {
+                        ...p.properties,
+                        // 确保热门度属性存在，默认为5
+                        popularity: p.properties.popularity || 5,
+                        // 存储原始点坐标用于弹窗
+                        originalCoords: [p.lng, p.lat]
+                    }
+                }))
+            };
+            
+            // 移除旧的数据源和图层
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+            if (map.getLayer(circleLayerId)) map.removeLayer(circleLayerId);
+            if (map.getLayer(extrusionLayerId)) map.removeLayer(extrusionLayerId);
+            if (map.getLayer(labelLayerId)) map.removeLayer(labelLayerId);
+            
+            // 添加点数据源（用于2D圆形）
+            map.addSource(sourceId, { type: 'geojson', data: pointGeojson });
+            
+            // 添加2D圆形图层
+            map.addLayer({
+                id: circleLayerId,
+                type: 'circle',
+                source: sourceId,
+                paint: {
+                    'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, radius - 1, 14, radius + 2, 18, radius + 5],
+                    'circle-color': color, 
+                    'circle-stroke-width': 2, 
+                    'circle-stroke-color': '#ffffff', 
+                    'circle-opacity': 0.88,
+                    'circle-blur': 0.5,
+                    'circle-pitch-alignment': 'viewport'
+                }
+            });
+            
+            // 添加标签图层（只在缩放级别14以上显示）
+            map.addLayer({
+                id: labelLayerId,
+                type: 'symbol',
+                source: sourceId,
+                layout: {
+                    'text-field': ['get', nameProperty],
+                    'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 16, 14, 18, 16],
+                    'text-offset': [0, 1.5],
+                    'text-anchor': 'top',
+                    'text-font': ['PingFang SC Regular', 'Microsoft YaHei Regular'],
+                    'visibility': 'visible'
+                },
+                paint: {
+                    'text-color': '#ffffff',
+                    'text-halo-color': 'rgba(0, 0, 0, 0.8)',
+                    'text-halo-width': 2,
+                    'text-halo-blur': 1
+                },
+                minzoom: 14
+            });
+            
+            // 添加3D圆柱图层
+            const extrusionSourceId = `${layerId}_extrusion_source`;
+            if (map.getSource(extrusionSourceId)) map.removeSource(extrusionSourceId);
+            map.addSource(extrusionSourceId, { type: 'geojson', data: polygonGeojson });
+            
+            map.addLayer({
+                id: extrusionLayerId,
+                type: 'fill-extrusion',
+                source: extrusionSourceId,
+                paint: {
+                    'fill-extrusion-color': color,
+                    'fill-extrusion-opacity': 0.85,
+                    'fill-extrusion-height': ['*', ['get', 'popularity'], 50], // 热门度乘以50作为高度（单位：米）
+                    'fill-extrusion-base': 0,
+                    'fill-extrusion-vertical-gradient': true,
+                    'fill-extrusion-translate': [0, 0],
+                    'fill-extrusion-translate-anchor': 'map'
+                },
+                layout: {
+                    'visibility': 'visible'
+                }
+            }); // 移除参考图层，让Mapbox自动决定图层位置
+            
+            // 根据地图状态显示/隐藏相应图层
+            function updateLayersVisibility() {
+                const is3D = map.getPitch() > 0;
+                
+                // 定义所有图层类型
+                const layerTypes = ['timehonored', 'chucai', 'nightmarket', 'snacks'];
+                
+                // 根据当前选择的类型更新所有图层的可见性
+                layerTypes.forEach(type => {
+                    const circleLayer = `wuhan_${type}_layer_circle`;
+                    const extrusionLayer = `wuhan_${type}_layer_extrusion`;
+                    const labelLayer = `wuhan_${type}_layer_label`;
+                    
+                    // 检查当前图层是否应该可见
+                    const shouldBeVisible = currentSelectedType === 'all' || currentSelectedType === type;
+                    
+                    // 更新圆形图层（2D）
+                    if (map.getLayer(circleLayer)) {
+                        map.setLayoutProperty(circleLayer, 'visibility', shouldBeVisible && !is3D ? 'visible' : 'none');
+                    }
+                    
+                    // 更新圆柱图层（3D）
+                    if (map.getLayer(extrusionLayer)) {
+                        map.setLayoutProperty(extrusionLayer, 'visibility', shouldBeVisible && is3D ? 'visible' : 'none');
+                    }
+                    
+                    // 更新标签图层
+                    if (map.getLayer(labelLayer)) {
+                        map.setLayoutProperty(labelLayer, 'visibility', shouldBeVisible && !is3D ? 'visible' : 'none');
+                    }
+                });
+            }
+            
+            // 初始更新
+            updateLayersVisibility();
+            
+            // 监听地图状态变化
+            map.on('move', updateLayersVisibility);
+            
+            const rule = getPopupRule(layerId);
+            let currentPopup = null;
+            
+            // 为2D圆形添加点击事件
+            if (map.getLayer(circleLayerId)) {
+                map.on('click', circleLayerId, (e) => {
+                    if (!e.features?.length) return;
+                    const feature = e.features[0];
+                    const coords = feature.geometry.coordinates;
+                    
+                    // 如果当前有popup，先关闭它
+                    if (currentPopup) {
+                        currentPopup.remove();
+                        currentPopup = null;
+                        return;
+                    }
+                    
+                    const html = rule.popupTemplate(feature.properties);
+                    currentPopup = new mapboxgl.Popup({ offset: [0, -12], closeButton: true, closeOnClick: false }).setLngLat(coords).setHTML(html).addTo(map);
+                    
+                    // 当popup关闭时，重置currentPopup
+                    currentPopup.on('close', () => {
+                        currentPopup = null;
+                    });
+                });
+                
+                // 为2D圆形添加鼠标悬停效果
+                map.on('mouseenter', circleLayerId, function() {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                map.on('mouseleave', circleLayerId, function() {
+                    map.getCanvas().style.cursor = '';
+                });
+            }
+            
+            // 为3D圆柱添加点击事件
+            if (map.getLayer(extrusionLayerId)) {
+                map.on('click', extrusionLayerId, function(e) {
+                    // 确保事件对象和特征数组存在
+                    if (!e || !e.features || e.features.length === 0) return;
+                    
+                    const feature = e.features[0];
+                    // 确保特征对象和属性存在
+                    if (!feature || !feature.properties) return;
+                    
+                    // 获取坐标，优先使用原始点坐标
+                    const coords = feature.properties.originalCoords || (feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates[0] && feature.geometry.coordinates[0][0]);
+                    if (!coords) return;
+                    
+                    // 如果当前有popup，先关闭它
+                    if (currentPopup) {
+                        currentPopup.remove();
+                        currentPopup = null;
+                        return;
+                    }
+                    
+                    // 确保规则和弹窗模板存在
+                    if (!rule || !rule.popupTemplate) return;
+                    
+                    try {
+                        const html = rule.popupTemplate(feature.properties);
+                        // 创建并添加弹窗
+                        currentPopup = new mapboxgl.Popup({ offset: [0, -12], closeButton: true, closeOnClick: false })
+                            .setLngLat(coords)
+                            .setHTML(html)
+                            .addTo(map);
+                        
+                        // 当popup关闭时，重置currentPopup
+                        currentPopup.on('close', () => {
+                            currentPopup = null;
+                        });
+                    } catch (error) {
+                        console.error('Error creating popup for 3D extrusion:', error);
+                    }
+                });
+                
+                // 为3D圆柱添加鼠标悬停效果
+                map.on('mouseenter', extrusionLayerId, function() {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                map.on('mouseleave', extrusionLayerId, function() {
+                    map.getCanvas().style.cursor = '';
+                });
+            }
+        }
+
+        // ============================================================
+        // 4. 地图加载完毕后添加四图层 + 导航栏交互 + 重置功能
+        // ============================================================
+        map.on('load', () => {
+            // 移除loading伪类，优雅展示地图
+            document.body.classList.add('map-loaded');
+            // 加载所有图层
+            loadAllLayers();
+            // 轻微飞行展示核心区域 (首次优雅展示)
+            setTimeout(() => {
+                map.flyTo({ 
+                    center: [114.2930, 30.5800], // 武汉中心坐标
+                    zoom: 12.8, // 缩放级别
+                    duration: 1800, // 动画持续时间（毫秒）
+                    essential: true // 确保动画执行
+                });
+            }, 400);
+
+            // ========== 导航栏交互 (美观 + 快速定位) ==========
+            // 获取导航菜单项
+            const navItems = document.querySelectorAll('.nav-item');
+            // 获取重置视图按钮
+            const resetBtn = document.getElementById('resetViewBtn');
+            // 获取店铺信息侧边栏
+            const shopSidebar = document.getElementById('shopSidebar');
+            // 获取侧边栏标题
+            const sidebarTitle = document.getElementById('sidebarTitle');
+            // 获取侧边栏内容区域
+            const sidebarContent = document.getElementById('sidebarContent');
+            // 获取关闭侧边栏按钮
+            const closeSidebar = document.getElementById('closeSidebar');
+
+            // 移除脉冲样式辅助函数
+            function removePulse() {
+                navItems.forEach(i => i.classList.remove('active-pulse'));
+            }
+            
+            // 添加短暂动画反馈函数
+            function pulseElement(el) {
+                el.classList.add('active-pulse');
+                setTimeout(() => el.classList.remove('active-pulse'), 400);
+            }
+
+            // 显示侧边栏并填充店铺信息
+            function showSidebar(type, name) {
+                let shops = []; // 店铺数据数组
+                let title = ''; // 侧边栏标题
+                
+                // 根据类型选择对应的店铺数据和标题
+                switch(type) {
+                    case 'timehonored':
+                        title = '🏮 过早经典 · 老字号店铺';
+                        shops = timehonoredPoints;
+                        break;
+                    case 'chucai':
+                        title = '🍽️ 八方风味 · 外地美食';
+                        shops = chucaiPoints;
+                        break;
+                    case 'nightmarket':
+                        title = '🌙 烟火夜市 · 深夜食堂';
+                        shops = nightMarketPoints;
+                        break;
+                    case 'snacks':
+                        title = '🥟 宝藏小吃 · 特色店铺';
+                        shops = snackPoints;
+                        break;
+                    case 'all':
+                        title = '🗺️ 全部店铺 · 江城美食';
+                        shops = [...timehonoredPoints, ...chucaiPoints, ...nightMarketPoints, ...snackPoints];
+                        break;
+                }
+                
+                // 更新侧边栏标题
+                sidebarTitle.textContent = title;
+                // 清空侧边栏内容
+                sidebarContent.innerHTML = '';
+                
+                // 遍历店铺数据，创建店铺项
+                shops.forEach(shop => {
+                    const props = shop.properties;
+                    let shopName = ''; // 店铺名称
+                    let shopInfo = ''; // 店铺信息
+                    let shopTag = ''; // 店铺标签
+                    
+                    // 根据店铺类型设置不同的信息格式
+                    if (type === 'timehonored' || (type === 'all' && props.shopName)) {
+                        shopName = props.shopName || '老字号店铺';
+                        shopInfo = `<p>📍 ${props.address || '武汉老巷'}</p>
+                                   <p>🍜 ${props.signatureDish || '经典味道'}</p>
+                                   <p>📅 ${props.establishedYear || '年代悠久'}</p>`;
+                        shopTag = '老字号';
+                    } else if (type === 'chucai' || (type === 'all' && props.restaurantName)) {
+                        shopName = props.restaurantName || '外地美食';
+                        shopInfo = `<p>📍 ${props.address || '武汉市区'}</p>
+                                   <p>🥢 ${props.cuisineType || '各地风味'}</p>
+                                   <p>💰 ${props.priceLevel || '人均 ¥60-100'}</p>`;
+                        shopTag = '外地美食';
+                    } else if (type === 'nightmarket' || (type === 'all' && props.stallName)) {
+                        shopName = props.stallName || '深夜食堂';
+                        shopInfo = `<p>📍 ${props.address || '武汉夜市街'}</p>
+                                   <p>🍢 ${props.specialtySnack || '小龙虾/烧烤'}</p>
+                                   <p>⏰ ${props.bestTime || '19:00 - 02:00'}</p>`;
+                        shopTag = '夜市';
+                    } else if (type === 'snacks' || (type === 'all' && props.snackName)) {
+                        shopName = props.snackName || '地道小吃';
+                        shopInfo = `<p>📍 ${props.address || '巷子深处'}</p>
+                                   <p>🍳 ${props.snackType || '武汉特色'}</p>
+                                   <p>💰 ${props.price || '¥5-20'}</p>`;
+                        shopTag = '小吃';
+                    }
+                    
+                    // 创建店铺项元素
+                    const shopItem = document.createElement('div');
+                    shopItem.className = 'shop-item';
+                    shopItem.innerHTML = `
+                        <h4>${shopName}</h4>
+                        ${shopInfo}
+                        <span class="shop-tag">${shopTag}</span>
+                    `;
+                    
+                    // 添加点击事件，点击店铺项时飞行到该店铺位置
+                    shopItem.addEventListener('click', () => {
+                        map.flyTo({ 
+                            center: [shop.lng, shop.lat], // 店铺坐标
+                            zoom: 16, // 缩放级别
+                            duration: 1200 // 动画持续时间
+                        });
+                    });
+                    
+                    // 将店铺项添加到侧边栏内容中
+                    sidebarContent.appendChild(shopItem);
+                });
+                
+                // 显示侧边栏
+                shopSidebar.classList.add('active');
+            }
+
+            // 关闭侧边栏
+            closeSidebar.addEventListener('click', () => {
+                shopSidebar.classList.remove('active');
+            });
+            
+            // 美食导航切换按钮
+            const foodNavToggle = document.querySelector('.food-nav-toggle');
+            const foodNav = document.querySelector('.food-nav');
+            
+            if (foodNavToggle && foodNav) {
+                foodNavToggle.addEventListener('click', () => {
+                    foodNav.classList.toggle('active');
+                    // 切换按钮图标
+                    if (foodNav.classList.contains('active')) {
+                        foodNavToggle.textContent = '✕';
+                    } else {
+                        foodNavToggle.textContent = '🍜';
+                    }
+                });
+            }
+            
+            // 美食图片导航交互
+            const foodItems = document.querySelectorAll('.food-item');
+            foodItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // 获取食物类型
+                    const foodType = item.getAttribute('data-food-type');
+                    let mapType = '';
+                    
+                    // 根据食物类型映射到对应的地图图层类型
+                    switch(foodType) {
+                        case '过早经典':
+                            mapType = 'timehonored';
+                            break;
+                        case '八方风味':
+                            mapType = 'chucai';
+                            break;
+                        case '烟火夜市':
+                            mapType = 'nightmarket';
+                            break;
+                        case '宝藏小吃':
+                            mapType = 'snacks';
+                            break;
+                        case '全部店铺':
+                            mapType = 'all';
+                            break;
+                    }
+                    
+                    // 触发对应的导航项点击
+                    const navItem = document.querySelector(`.nav-item[data-focus="${mapType}"]`);
+                    if (navItem) {
+                        navItem.click();
+                    }
+                });
+            });
+            
+            // 路线相关变量
+            let routeAnimationId = null; // 路线动画ID
+            let currentRouteShops = []; // 当前路线的店铺列表
+            let currentRouteType = null; // 当前路线类型
+            
+            // 监听地图状态变化，确保始终只显示当前类型的店铺
+            function updateLayersVisibility() {
+                // 只有在路线动画运行时才更新图层可见性
+                if (routeAnimationId && currentRouteType) {
+                    const layerIds = ['timehonored', 'chucai', 'nightmarket', 'snacks'];
+                    layerIds.forEach(layerId => {
+                        const circleLayer = `wuhan_${layerId}_layer_circle`; // 2D点图层
+                        const labelLayer = `wuhan_${layerId}_layer_label`; // 标签图层
+                        const extrusionLayer = `wuhan_${layerId}_layer_extrusion`; // 3D建筑图层
+                        
+                        // 判断当前图层是否应该可见
+                        const isVisible = (currentRouteType === 'all' || layerId === currentRouteType);
+                        // 判断当前是否为3D视角
+                        const is3D = map.getPitch() > 0;
+                        
+                        // 更新2D点图层可见性
+                        if (map.getLayer(circleLayer)) {
+                            map.setLayoutProperty(circleLayer, 'visibility', isVisible && !is3D ? 'visible' : 'none');
+                        }
+                        // 更新标签图层可见性
+                        if (map.getLayer(labelLayer)) {
+                            map.setLayoutProperty(labelLayer, 'visibility', isVisible ? 'visible' : 'none');
+                        }
+                        // 更新3D建筑图层可见性
+                        if (map.getLayer(extrusionLayer)) {
+                            map.setLayoutProperty(extrusionLayer, 'visibility', isVisible && is3D ? 'visible' : 'none');
+                        }
+                    });
+                }
+            }
+            
+            // 准备路线数据
+            function prepareRouteData(type) {
+                let shops = []; // 店铺数据数组
+                
+                // 根据类型选择对应的店铺数据
+                switch(type) {
+                    case 'timehonored':
+                        shops = timehonoredPoints;
+                        break;
+                    case 'chucai':
+                        shops = chucaiPoints;
+                        break;
+                    case 'nightmarket':
+                        shops = nightMarketPoints;
+                        break;
+                    case 'snacks':
+                        shops = snackPoints;
+                        break;
+                    case 'all':
+                        shops = [...timehonoredPoints, ...chucaiPoints, ...nightMarketPoints, ...snackPoints];
+                        break;
+                }
+                
+                // 检查店铺数量是否足够
+                if (shops.length < 2) {
+                    alert('店铺数量不足，无法生成路线');
+                    return null;
+                }
+                
+                // 按地理位置排序（简单实现，按经度排序）
+                shops.sort((a, b) => a.lng - b.lng);
+                return shops;
+            }
+            
+            // 播放路线动画
+            function playRouteAnimation(shops, type) {
+                // 清除之前的动画
+                if (routeAnimationId) {
+                    clearInterval(routeAnimationId);
+                }
+                
+                // 只显示当前路线类型的店铺
+                const layerIds = ['timehonored', 'chucai', 'nightmarket', 'snacks'];
+                layerIds.forEach(layerId => {
+                    const circleLayer = `wuhan_${layerId}_layer_circle`; // 2D点图层
+                    const labelLayer = `wuhan_${layerId}_layer_label`; // 标签图层
+                    const extrusionLayer = `wuhan_${layerId}_layer_extrusion`; // 3D建筑图层
+                    
+                    // 判断当前图层是否应该可见
+                    const isVisible = (type === 'all' || layerId === type);
+                    // 判断当前是否为3D视角
+                    const is3D = map.getPitch() > 0;
+                    
+                    // 更新2D点图层可见性
+                    if (map.getLayer(circleLayer)) {
+                        map.setLayoutProperty(circleLayer, 'visibility', isVisible && !is3D ? 'visible' : 'none');
+                    }
+                    // 更新标签图层可见性
+                    if (map.getLayer(labelLayer)) {
+                        map.setLayoutProperty(labelLayer, 'visibility', isVisible ? 'visible' : 'none');
+                    }
+                    // 更新3D建筑图层可见性
+                    if (map.getLayer(extrusionLayer)) {
+                        map.setLayoutProperty(extrusionLayer, 'visibility', isVisible && is3D ? 'visible' : 'none');
+                    }
+                });
+                
+                let currentIndex = 0; // 当前店铺索引
+                const totalShops = shops.length; // 店铺总数
+                const duration = 3000; // 每个店铺停留时间（毫秒）
+                
+                // 保存当前路线店铺和类型
+                currentRouteShops = shops;
+                currentRouteType = type;
+                
+                // 开始动画
+                routeAnimationId = setInterval(() => {
+                    if (currentIndex < totalShops) {
+                        const shop = shops[currentIndex];
+                        
+                        // 飞行到当前店铺
+                        map.flyTo({
+                            center: [shop.lng, shop.lat], // 店铺坐标
+                            zoom: 15, // 缩放级别
+                            duration: 2000, // 动画持续时间
+                            essential: true // 确保动画执行
+                        });
+                        
+                        currentIndex++;
+                    } else {
+                        // 动画结束
+                        clearInterval(routeAnimationId);
+                        routeAnimationId = null;
+                        currentRouteType = null;
+                        
+                        // 回到初始视角
+                        map.flyTo({
+                            center: [114.2930, 30.5800], // 武汉中心坐标
+                            zoom: 12.5, // 缩放级别
+                            duration: 3000 // 动画持续时间
+                        });
+                    }
+                }, duration);
+                
+                // 绑定地图事件，确保地图状态变化时图层可见性正确
+                map.on('move', updateLayersVisibility);
+                map.on('pitch', updateLayersVisibility);
+                map.on('rotate', updateLayersVisibility);
+                map.on('zoom', updateLayersVisibility);
+            }
+            
+            // 停止路线动画
+            function stopRouteAnimation() {
+                // 清除路线动画
+                if (routeAnimationId) {
+                    clearInterval(routeAnimationId);
+                    routeAnimationId = null;
+                }
+                
+                // 移除地图事件监听器
+                map.off('move', updateLayersVisibility);
+                map.off('pitch', updateLayersVisibility);
+                map.off('rotate', updateLayersVisibility);
+                map.off('zoom', updateLayersVisibility);
+                
+                // 显示所有店铺图层
+                const layerIds = ['timehonored', 'chucai', 'nightmarket', 'snacks'];
+                layerIds.forEach(layerId => {
+                    const circleLayer = `wuhan_${layerId}_layer_circle`; // 2D点图层
+                    const labelLayer = `wuhan_${layerId}_layer_label`; // 标签图层
+                    const extrusionLayer = `wuhan_${layerId}_layer_extrusion`; // 3D建筑图层
+                    
+                    // 显示2D点图层
+                    if (map.getLayer(circleLayer)) {
+                        map.setLayoutProperty(circleLayer, 'visibility', 'visible');
+                    }
+                    // 显示标签图层
+                    if (map.getLayer(labelLayer)) {
+                        map.setLayoutProperty(labelLayer, 'visibility', 'visible');
+                    }
+                    // 显示3D建筑图层
+                    if (map.getLayer(extrusionLayer)) {
+                        map.setLayoutProperty(extrusionLayer, 'visibility', 'visible');
+                    }
+                });
+            }
+            
+            // 为导航项添加路线功能（双击触发）
+            navItems.forEach(item => {
+                item.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    // 获取导航项对应的店铺类型
+                    const focus = item.getAttribute('data-focus');
+                    // 准备路线数据
+                    const shops = prepareRouteData(focus);
+                    if (shops) {
+                        // 播放路线动画
+                        playRouteAnimation(shops, focus);
+                        // 添加动画反馈
+                        pulseElement(item);
+                    }
+                });
+            });
+            
+            // 添加控制按钮
+            const controlContainer = document.createElement('div');
+            controlContainer.className = 'route-controls';
+            controlContainer.innerHTML = `
+                <button id="startRouteBtn" class="control-btn start-btn">▶️ 开始路线</button>
+                <button id="stopRouteBtn" class="control-btn stop-btn">⏹️ 停止路线</button>
+            `;
+            document.body.appendChild(controlContainer);
+            
+            // 控制按钮样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .route-controls {
+                    position: fixed;
+                    bottom: 30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    display: flex;
+                    gap: 12px;
+                    z-index: 15;
+                }
+                .control-buttons {
+                    position: fixed;
+                    bottom: 30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    display: flex;
+                    gap: 12px;
+                    z-index: 15;
+                    animation: fadeInUp 0.8s ease-out;
+                }
+                .control-btn {
+                    padding: 12px 24px;
+                    border: none;
+                    border-radius: 30px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    backdrop-filter: blur(16px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    animation: fadeInUp 0.8s ease-out;
+                }
+                .start-btn {
+                    background: rgba(46, 204, 113, 0.95);
+                    color: white;
+                    animation-delay: 0.2s;
+                }
+                .start-btn:hover {
+                    background: rgba(39, 174, 96, 1);
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
+                    animation: glow 2s ease-in-out infinite;
+                }
+                .stop-btn {
+                    background: rgba(231, 76, 60, 0.95);
+                    color: white;
+                    animation-delay: 0.4s;
+                }
+                .stop-btn:hover {
+                    background: rgba(192, 57, 43, 1);
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+                    animation: glow 2s ease-in-out infinite;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 控制按钮事件
+            document.getElementById('startRouteBtn').addEventListener('click', () => {
+                // 每次点击都显示路线类型选择
+                const routeType = prompt('请选择路线类型：\n1. 全部店铺\n2. 过早经典\n3. 八方风味\n4. 烟火夜市\n5. 宝藏小吃\n\n请输入数字选择：');
+                
+                let type;
+                switch(routeType) {
+                    case '1':
+                        type = 'all';
+                        break;
+                    case '2':
+                        type = 'timehonored';
+                        break;
+                    case '3':
+                        type = 'chucai';
+                        break;
+                    case '4':
+                        type = 'nightmarket';
+                        break;
+                    case '5':
+                        type = 'snacks';
+                        break;
+                    default:
+                        return;
+                }
+                
+                // 准备路线数据
+                const shops = prepareRouteData(type);
+                    if (shops) {
+                        // 播放路线动画
+                        playRouteAnimation(shops, type);
+                    }
+            });
+            
+            // 停止路线按钮事件
+            document.getElementById('stopRouteBtn').addEventListener('click', stopRouteAnimation);
+
+            // 导航栏点击事件处理
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // 获取导航项对应的店铺类型
+                    const focus = item.getAttribute('data-focus');
+                    
+                    // 确保focus不为空
+                    if (!focus) return;
+                    
+                    // 保存当前选择的店铺类型到全局变量
+                    currentSelectedType = focus;
+                    
+                    // 计算对应图层的中心位置
+                    let centerLng = 114.2930; // 默认经度
+                    let centerLat = 30.5800; // 默认纬度
+                    
+                    // 定义所有图层类型
+                    const layerTypes = ['timehonored', 'chucai', 'nightmarket', 'snacks'];
+                    
+                    // 获取当前地图状态
+                    const is3D = map.getPitch() > 0;
+                    
+                    // 单个类型店铺，只显示对应图层
+                    if (layerTypes.includes(focus)) {
+                        switch (focus) {
+                            case 'timehonored':
+                                // 老字号店铺中心位置
+                                centerLng = 114.2900;
+                                centerLat = 30.5850;
+                                break;
+                            case 'chucai':
+                                // 八方风味店铺中心位置
+                                centerLng = 114.2900;
+                                centerLat = 30.5800;
+                                break;
+                            case 'nightmarket':
+                                // 夜市店铺中心位置（户部巷）
+                                centerLng = 114.2925;
+                                centerLat = 30.5495;
+                                break;
+                            case 'snacks':
+                                // 小吃店铺中心位置
+                                centerLng = 114.2900;
+                                centerLat = 30.5850;
+                                break;
+                        }
+                    }
+                    
+                    // 直接显示/隐藏图层，不改变地图样式
+                    if (focus === 'all') {
+                        // 全部店铺，显示所有图层
+                        layerTypes.forEach(type => {
+                            const circleLayer = `wuhan_${type}_layer_circle`; // 2D点图层
+                            const labelLayer = `wuhan_${type}_layer_label`; // 标签图层
+                            const extrusionLayer = `wuhan_${type}_layer_extrusion`; // 3D建筑图层
+                            
+                            // 根据当前视角更新图层可见性
+                            if (map.getLayer(circleLayer)) {
+                                map.setLayoutProperty(circleLayer, 'visibility', is3D ? 'none' : 'visible');
+                            }
+                            if (map.getLayer(labelLayer)) {
+                                map.setLayoutProperty(labelLayer, 'visibility', 'visible');
+                            }
+                            if (map.getLayer(extrusionLayer)) {
+                                map.setLayoutProperty(extrusionLayer, 'visibility', is3D ? 'visible' : 'none');
+                            }
+                        });
+                    } else if (layerTypes.includes(focus)) {
+                        // 单个类型店铺，只显示对应图层
+                        layerTypes.forEach(type => {
+                            const circleLayer = `wuhan_${type}_layer_circle`; // 2D点图层
+                            const labelLayer = `wuhan_${type}_layer_label`; // 标签图层
+                            const extrusionLayer = `wuhan_${type}_layer_extrusion`; // 3D建筑图层
+                            const isVisible = type === focus;
+                            
+                            // 根据当前视角和类型更新图层可见性
+                            if (map.getLayer(circleLayer)) {
+                                map.setLayoutProperty(circleLayer, 'visibility', isVisible && !is3D ? 'visible' : 'none');
+                            }
+                            if (map.getLayer(labelLayer)) {
+                                map.setLayoutProperty(labelLayer, 'visibility', isVisible ? 'visible' : 'none');
+                            }
+                            if (map.getLayer(extrusionLayer)) {
+                                map.setLayoutProperty(extrusionLayer, 'visibility', isVisible && is3D ? 'visible' : 'none');
+                            }
+                        });
+                    }
+                    
+                    // 移动视角到对应图层的中心位置
+                    map.flyTo({ 
+                        center: [centerLng, centerLat], // 目标中心坐标
+                        zoom: 14.5, // 缩放级别
+                        duration: 1200, // 动画持续时间
+                        essential: true // 确保动画执行
+                    });
+                    
+                    // 显示侧边栏
+                    const name = item.getAttribute('data-name');
+                    showSidebar(focus, name);
+                    
+                    // 添加动画反馈
+                    pulseElement(item);
+                });
+            });
+
+            // 重置视图: 回到汉口美食核心区
+            if (resetBtn) {
+                resetBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // 重置全局变量为'all'
+                    currentSelectedType = 'all';
+                    
+                    // 关闭侧边栏
+                    shopSidebar.classList.remove('active');
+                    
+                    // 清除路线动画
+                    if (routeAnimationId) {
+                        clearInterval(routeAnimationId);
+                        routeAnimationId = null;
+                    }
+                    
+                    // 清空当前路线数据
+                    currentRouteShops = [];
+                    
+                    // 获取当前地图状态
+                    const is3D = map.getPitch() > 0;
+                    
+                    // 显示所有图层，不改变地图样式
+                    const layerTypes = ['timehonored', 'chucai', 'nightmarket', 'snacks'];
+                    layerTypes.forEach(type => {
+                        const circleLayer = `wuhan_${type}_layer_circle`; // 2D点图层
+                        const labelLayer = `wuhan_${type}_layer_label`; // 标签图层
+                        const extrusionLayer = `wuhan_${type}_layer_extrusion`; // 3D建筑图层
+                        
+                        // 根据当前视角更新图层可见性
+                        if (map.getLayer(circleLayer)) {
+                            map.setLayoutProperty(circleLayer, 'visibility', is3D ? 'none' : 'visible');
+                        }
+                        if (map.getLayer(labelLayer)) {
+                            map.setLayoutProperty(labelLayer, 'visibility', 'visible');
+                        }
+                        if (map.getLayer(extrusionLayer)) {
+                            map.setLayoutProperty(extrusionLayer, 'visibility', is3D ? 'visible' : 'none');
+                        }
+                    });
+                    
+                    // 飞行到武汉中心位置
+                    map.flyTo({ 
+                        center: [114.2930, 30.5800], // 武汉中心坐标
+                        zoom: 12.5, // 缩放级别
+                        duration: 1400 // 动画持续时间
+                    });
+                });
+            }
+
+            console.log('武汉美食地图 | 四个差异化图层已加载，导航栏可快速定位');
+        });
+
+        map.on('error', (e) => console.warn('地图小提示:', e));
+    </script>
+</body>
+</html>

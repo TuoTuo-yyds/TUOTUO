@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>袁上恒 — 作品集封面 / PORTFOLIO COVER 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   作品集封面 · 拼贴 × 半调 × 噪点 × 故障 × 赛博
+   海报物理尺寸 1080 × 1527（≈ A4 比例），JS 自动缩放适配屏幕
+   按 SPACE / 点击画面 = 触发故障脉冲；按 P = 导出打印 PDF
+   ============================================================ */
+:root {
+  --desk: #0b0b0d;        /* 画布外底色 */
+  --bg: #15151a;          /* 海报底色 */
+  --cream: #ece7dd;       /* 米白主字色 */
+  --ink-dim: #8b8880;     /* 次级灰 */
+  --red: #d03325;         /* 锐红 */
+  --cyan: #46e8dc;        /* 赛博青 */
+  --mag: #ff36b3;         /* 赛博品红 */
+  --f-d: "Bodoni Moda", "Noto Serif SC", serif;
+  --f-c: "Noto Serif SC", "SimSun", serif;
+  --f-m: "IBM Plex Mono", Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--desk); overflow: hidden; cursor: crosshair; font-family: var(--f-c); }
+::selection { background: var(--red); color: var(--cream); }
+
+/* ---------- 海报画布：1080 × 1527，整体缩放 ---------- */
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1080px; height: 1527px;
+  transform: translate(-50%, -50%);
+  background: var(--bg);
+  border: 1px solid rgba(236, 231, 221, .14);
+  overflow: hidden;
+}
+
+/* ---------- 全局纹理层 ---------- */
+.tex-noise, .tex-scan, .tex-beam, .tex-vig { position: absolute; inset: 0; pointer-events: none; }
+.tex-noise {
+  z-index: 60; opacity: .12; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.tex-scan {
+  z-index: 61; opacity: .5;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(236,231,221,.028) 3px 4px);
+}
+.tex-beam { z-index: 62; overflow: hidden; }
+.tex-beam::before {
+  content: ""; position: absolute; left: 0; right: 0; height: 140px;
+  background: linear-gradient(transparent, rgba(70,232,220,.09), rgba(255,54,179,.05), transparent);
+  animation: beam 8s linear infinite;
+}
+@keyframes beam { 0% { top: -20%; } 100% { top: 110%; } }
+.tex-vig { z-index: 63; background: radial-gradient(120% 90% at 50% 40%, transparent 60%, rgba(0,0,0,.5)); }
+
+/* ---------- 背景细网格 ---------- */
+.tex-grid {
+  position: absolute; inset: 0; z-index: 0; opacity: .5;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 79px, rgba(236,231,221,.05) 79px 80px),
+    repeating-linear-gradient(90deg, transparent 0 79px, rgba(236,231,221,.05) 79px 80px);
+}
+
+/* ---------- 半调网点块 ---------- */
+.dots { position: absolute; pointer-events: none; }
+.dots.red {
+  background-image: radial-gradient(circle, var(--red) 1.5px, transparent 1.6px);
+  background-size: 9px 9px;
+}
+.dots.cyan {
+  background-image: radial-gradient(circle, var(--cyan) 1.3px, transparent 1.4px);
+  background-size: 8px 8px; opacity: .45;
+}
+.dots.cream {
+  background-image: radial-gradient(circle, var(--cream) 1.2px, transparent 1.3px);
+  background-size: 7px 7px; opacity: .18;
+}
+
+/* ---------- 巨型描边年份（背景层） ---------- */
+.giant {
+  position: absolute; left: -30px; bottom: -70px; z-index: 1;
+  font-family: var(--f-d); font-style: italic; font-weight: 900;
+  font-size: 430px; line-height: 1; letter-spacing: -.04em;
+  color: transparent; -webkit-text-stroke: 1px rgba(236,231,221,.13);
+  user-select: none;
+}
+
+/* ---------- 顶部信息条 ---------- */
+.topbar {
+  position: absolute; left: 90px; right: 90px; top: 58px; z-index: 5;
+  display: flex; justify-content: space-between;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 3px;
+  color: var(--ink-dim);
+}
+.topbar b { color: var(--cream); font-weight: 500; }
+.topbar .cy { color: var(--cyan); }
+.rule { position: absolute; left: 90px; right: 90px; height: 1px; background: rgba(236,231,221,.28); z-index: 5; }
+.rule.top { top: 96px; }
+.rule.bot { top: 1452px; }
+
+/* ---------- 巨型标题（故障 RGB 分离） ---------- */
+.title-wrap { position: absolute; left: 88px; top: 148px; z-index: 6; }
+.g-title {
+  position: relative;
+  font-family: var(--f-d); font-weight: 900;
+  font-size: 208px; line-height: .9; letter-spacing: -.015em;
+  color: var(--cream); text-transform: uppercase;
+}
+.g-title .star { color: var(--red); }
+.g-title::before, .g-title::after {
+  content: attr(data-t);
+  position: absolute; left: 0; top: 0; width: 100%;
+  opacity: 0; pointer-events: none;
+}
+.g-title::before { color: var(--cyan); }
+.g-title::after  { color: var(--mag); }
+.stage.burst .g-title { animation: tjit .45s steps(3); }
+.stage.burst .g-title::before { opacity: .85; animation: gsliceA .45s steps(2); }
+.stage.burst .g-title::after  { opacity: .8;  animation: gsliceB .45s steps(2); }
+@keyframes tjit {
+  0% { transform: none; }
+  33% { transform: translate(-7px, 3px) skewX(-2deg); }
+  66% { transform: translate(6px, -2px) skewX(1.6deg); }
+}
+@keyframes gsliceA {
+  0% { clip-path: inset(8% 0 76% 0); transform: translate(-9px, 0); }
+  50% { clip-path: inset(46% 0 34% 0); transform: translate(7px, 0); }
+  100% { clip-path: inset(70% 0 8% 0); transform: translate(-5px, 0); }
+}
+@keyframes gsliceB {
+  0% { clip-path: inset(60% 0 18% 0); transform: translate(9px, 0); }
+  50% { clip-path: inset(22% 0 60% 0); transform: translate(-8px, 0); }
+  100% { clip-path: inset(4% 0 84% 0); transform: translate(5px, 0); }
+}
+.title-note {
+  margin-top: 26px;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 4px;
+  color: var(--ink-dim);
+}
+.title-note em { color: var(--red); font-style: normal; }
+
+/* ---------- 侧边竖排文字 ---------- */
+.vtext {
+  position: absolute; writing-mode: vertical-rl; z-index: 5;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 6px;
+  color: var(--ink-dim);
+}
+.v-right { right: 44px; top: 560px; height: 640px; }
+.v-right b { color: var(--cream); font-weight: 500; font-family: var(--f-c); font-size: 15px; letter-spacing: 12px; }
+.v-left { left: 40px; top: 690px; height: 500px; opacity: .8; }
+
+/* ---------- 印刷套准标记 ---------- */
+.regmark { position: absolute; width: 24px; height: 24px; z-index: 40; }
+.regmark::before {
+  content: ""; position: absolute; inset: 4px;
+  border: 1px solid rgba(236,231,221,.45); border-radius: 50%;
+}
+.regmark::before, .regmark::after { content: ""; position: absolute; background: rgba(236,231,221,.45); }
+.regmark::before { left: 50%; top: -2px; width: 1px; height: 28px; border: none; border-radius: 0; }
+.regmark::after { top: 50%; left: -2px; height: 1px; width: 28px; }
+.r-tl { left: 30px; top: 30px; } .r-tr { right: 30px; top: 30px; }
+.r-bl { left: 30px; bottom: 30px; } .r-br { right: 30px; bottom: 30px; }
+
+/* ============================================================
+   图像层叠区（拼贴核心）
+   ============================================================ */
+.cluster { position: absolute; left: 0; top: 600px; width: 100%; height: 700px; z-index: 10; }
+
+/* 红色错位底块 */
+.red-offset {
+  position: absolute; left: 508px; top: 40px;
+  width: 470px; height: 640px;
+  background: var(--red);
+}
+/* 主视觉 */
+.main-img {
+  position: absolute; left: 483px; top: 15px;
+  width: 470px; height: 640px;
+  overflow: hidden; background: #0d0d10;
+}
+.main-img img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: filter .4s, transform .5s;
+}
+.main-img:hover img { filter: saturate(1.35) contrast(1.1); }
+.main-img .dots { inset: 0; mix-blend-mode: overlay; opacity: .3; }
+.main-img .strip {
+  position: absolute; left: 0; height: 10px; width: 70%;
+  mix-blend-mode: exclusion; opacity: 0; pointer-events: none;
+}
+.strip.s1 { background: var(--cyan); }
+.strip.s2 { background: var(--cream); height: 6px; }
+.strip.s3 { background: var(--mag); height: 14px; }
+.stage.burst .strip { animation: stripMove .45s steps(5) forwards; }
+@keyframes stripMove {
+  0% { opacity: .95; transform: translateX(-40px) scaleX(.7); }
+  50% { transform: translateX(24px) scaleX(1.05); }
+  100% { opacity: 0; transform: translateX(70px) scaleX(.8); }
+}
+.stage.burst .main-img img { animation: ijit .45s steps(4); }
+@keyframes ijit {
+  0% { transform: none; filter: none; }
+  30% { transform: translateX(-9px); filter: hue-rotate(40deg) saturate(2); }
+  65% { transform: translateX(7px) scaleY(1.01); filter: hue-rotate(-30deg); }
+}
+
+/* 选取框 + 四角手柄 */
+.selbox { position: relative; }
+.selbox::before { content: ""; position: absolute; inset: 0; border: 1px solid rgba(236,231,221,.75); z-index: 4; pointer-events: none; }
+.selbox i {
+  position: absolute; width: 8px; height: 8px; z-index: 5;
+  background: var(--bg); border: 1px solid var(--cream);
+}
+.selbox .tl { top: -4px; left: -4px; } .selbox .tr { top: -4px; right: -4px; }
+.selbox .bl { bottom: -4px; left: -4px; } .selbox .br { bottom: -4px; right: -4px; }
+
+/* 图像碎片（叠压图层） */
+.frag { position: absolute; overflow: hidden; z-index: 12; }
+.frag img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frag .dots { inset: 0; mix-blend-mode: overlay; opacity: .35; }
+.f1 {
+  left: 292px; top: 65px; width: 235px; height: 305px;
+  border: 1px solid rgba(236,231,221,.7);
+  transform: rotate(-1.6deg);
+}
+.f1 img { filter: grayscale(1) contrast(1.25) brightness(1.05); mix-blend-mode: screen; }
+.f2 {
+  left: 828px; top: 345px; width: 215px; height: 290px;
+  border: 1px solid var(--cyan);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 62% 78%, 62% 100%, 0 100%);
+}
+.f2 img { filter: grayscale(1) sepia(1) hue-rotate(130deg) saturate(2.6) brightness(1.1); mix-blend-mode: screen; }
+
+/* 小标签 */
+.tag {
+  position: absolute; z-index: 14;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 3px;
+  background: var(--bg); color: var(--cream);
+  border: 1px solid rgba(236,231,221,.7);
+  padding: 5px 12px; white-space: nowrap;
+}
+.tag.red { background: var(--red); border-color: var(--red); }
+.tag.cy { border-color: var(--cyan); color: var(--cyan); background: rgba(21,21,26,.85); }
+.t1 { left: 318px; top: 18px; }
+.t2 { right: 118px; top: -14px; }
+.t3 { left: 640px; top: 668px; }
+
+/* 标注文字 */
+.anno {
+  position: absolute; z-index: 14;
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 2px;
+  color: var(--ink-dim);
+}
+.a1 { left: 486px; top: 700px; }
+.a1 b { color: var(--cyan); font-weight: 500; }
+
+/* 终端小字块（赛博感） */
+.term {
+  position: absolute; left: 92px; top: 432px; z-index: 14;
+  font-family: var(--f-m); font-size: 10.5px; letter-spacing: 1.5px;
+  line-height: 2; color: var(--cyan); opacity: .85;
+}
+.term::before { content: "▮"; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* 红色横条（名称上方） */
+.red-bar { position: absolute; left: 90px; top: 1122px; width: 300px; height: 14px; background: var(--red); z-index: 8; }
+
+/* ============================================================
+   姓名 + 信息区
+   ============================================================ */
+.name-block { position: absolute; left: 88px; top: 1215px; z-index: 16; }
+.name-cn {
+  font-family: var(--f-c); font-weight: 900;
+  font-size: 118px; line-height: 1; letter-spacing: .04em;
+  color: var(--cream);
+}
+.name-cn em { font-style: normal; color: var(--red); }
+.name-meta {
+  margin-top: 20px;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 2px;
+  color: var(--ink-dim); line-height: 2.2;
+}
+.name-meta b { color: var(--cream); font-weight: 500; }
+
+.index-block {
+  position: absolute; right: 90px; top: 1350px; z-index: 16;
+  text-align: right;
+  font-family: var(--f-m); font-size: 11px; letter-spacing: 3px;
+  color: var(--ink-dim); line-height: 2.2;
+}
+.index-block b { color: var(--red); font-weight: 500; }
+
+/* ---------- 页脚：条形码 / 规格 / 红方块 ---------- */
+.barcode {
+  position: absolute; left: 90px; top: 1470px; width: 190px; height: 34px; z-index: 8;
+  background:
+    repeating-linear-gradient(90deg, var(--cream) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(90deg, var(--cream) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(90deg, var(--cream) 0 4px, transparent 4px 15px);
+}
+.barcode-no {
+  position: absolute; left: 90px; top: 1506px; z-index: 8;
+  font-family: var(--f-m); font-size: 9px; letter-spacing: 6px; color: var(--ink-dim);
+}
+.spec {
+  position: absolute; left: 50%; top: 1484px; transform: translateX(-50%); z-index: 8;
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 3px; color: var(--ink-dim);
+}
+.spec .cy { color: var(--cyan); }
+.red-sq {
+  position: absolute; right: 90px; top: 1462px; z-index: 8;
+  width: 48px; height: 48px; background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream); font-size: 22px;
+}
+
+/* ---------- 入场动效 ---------- */
+.fade { opacity: 0; transform: translateY(26px); transition: opacity .9s ease, transform .9s cubic-bezier(.22,1,.36,1); }
+.fade.in { opacity: 1; transform: translateY(0); }
+
+/* ---------- 开场幕布 ---------- */
+#boot {
+  position: fixed; inset: 0; z-index: 900; background: var(--desk);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-m); font-size: 12px; letter-spacing: 6px; color: var(--ink-dim);
+  transition: opacity .5s ease .35s, visibility .5s .35s;
+}
+#boot.off { opacity: 0; visibility: hidden; }
+#boot span::before { content: "▮ "; color: var(--red); animation: blink .8s steps(2) infinite; }
+
+/* ---------- 画布外操作提示 ---------- */
+.hint {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+  font-family: var(--f-m); font-size: 10px; letter-spacing: 3px;
+  color: #55535b; z-index: 500;
+}
+.hint b { color: var(--cyan); font-weight: 500; }
+
+/* ---------- 打印：导出 A4 ---------- */
+@media print {
+  body { background: #fff; overflow: visible; }
+  .hint, #boot { display: none !important; }
+  .stage { position: static; transform: scale(.735) !important; transform-origin: top left; }
+  @page { size: A4 portrait; margin: 0; }
+}
+
+/* ---------- 小屏适配 ---------- */
+@media (max-width: 700px) {
+  .stage { transform: translate(-50%, -50%) scale(calc(100vw / 1120)) !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="boot"><span>RENDERING PORTFOLIO COVER — 载入中</span></div>
+
+<!-- ==================== 海报画布 ==================== -->
+<div class="stage" id="stage">
+
+  <!-- 背景层 -->
+  <div class="tex-grid"></div>
+  <div class="giant">26</div>
+  <div class="dots red fade"  style="left:86px;  top:560px; width:170px; height:210px;"></div>
+  <div class="dots cyan fade" style="left:864px; top:522px; width:130px; height:170px;"></div>
+  <div class="dots cream fade" style="left:88px; top:340px; width:110px; height:130px;"></div>
+
+  <!-- 印刷套准标记 -->
+  <div class="regmark r-tl"></div><div class="regmark r-tr"></div>
+  <div class="regmark r-bl"></div><div class="regmark r-br"></div>
+
+  <!-- 顶部信息条 -->
+  <div class="topbar fade">
+    <span><b>PORTFOLIO</b> / 作品集</span>
+    <span class="cy">YUAN SHANGHENG — ART &amp; TECHNOLOGY</span>
+    <span>VOL.01 — <b>2026</b></span>
+  </div>
+  <div class="rule top"></div>
+
+  <!-- 巨型标题 -->
+  <div class="title-wrap fade" data-depth="4">
+    <h1 class="g-title" data-t="PORT">PORT</h1>
+    <h1 class="g-title" data-t="FOLIO">FOLIO<span class="star">*</span></h1>
+    <p class="title-note">COLLAGE <em>/</em> HALFTONE <em>/</em> GLITCH <em>/</em> CYBER — 拼贴 × 半调 × 故障 × 赛博</p>
+  </div>
+
+  <!-- 侧边竖排 -->
+  <div class="vtext v-right fade"><b>艺术与科技作品集</b> — PORTFOLIO OF ART &amp; TECHNOLOGY / 2024–2026</div>
+  <div class="vtext v-left fade">VEINS DEVELOPED — SIGNAL 0x7F3A — GENTLE PROPHECY — 未完成的 reliquary</div>
+
+  <!-- ============ 图像层叠区 ============ -->
+  <div class="cluster" id="cluster" data-depth="7">
+    <div class="red-offset"></div>
+
+    <figure class="main-img selbox fade">
+      <i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+      <img src="assets/david.jpg" alt="主视觉 — 大卫" />
+      <div class="dots"></div>
+      <span class="strip s1"></span>
+      <span class="strip s2"></span>
+      <span class="strip s3"></span>
+    </figure>
+
+    <figure class="frag f1 fade"><img src="assets/hand.jpg" alt="古典手部" /><div class="dots"></div></figure>
+    <figure class="frag f2 fade"><img src="assets/david.jpg" alt="故障切片" /><div class="dots"></div></figure>
+
+    <div class="tag t1 fade">SEED SIGNAL — 种子信号</div>
+    <div class="tag t2 fade">GENTLE PROPHECY</div>
+    <div class="tag t3 red fade">OPEN RELIC / 未完成之物</div>
+
+    <div class="anno a1 fade">W.470 × H.640 — <b>RGB_SPLIT: ACTIVE</b> — SCAN 60Hz</div>
+
+    <div class="term fade">
+      SYS.01 // SIGNAL_LOCKED 0x7F3A<br />
+      NOISE 14.7% — GRAIN 300DPI<br />
+      &gt;&gt;&gt; RENDERING_REALITY_
+    </div>
+  </div>
+
+  <!-- ============ 姓名信息 ============ -->
+  <div class="red-bar fade"></div>
+  <div class="name-block fade" data-depth="3">
+    <h1 class="name-cn">袁<em>上</em>恒</h1>
+    <p class="name-meta">
+      <b>YUAN SHANGHENG</b> — HUBEI ACADEMY OF FINE ARTS<br />
+      ART &amp; TECHNOLOGY / 互动装置 · 生成艺术 · 实验影像<br />
+      hello@example.com · @yuan.shangheng · WUHAN 武汉
+    </p>
+  </div>
+  <div class="index-block fade">
+    INDEX <b>01—05</b> / 五件作品<br />
+    拼贴 × 半调 × 故障 × 赛博<br />
+    PRINTED IN THE FUTURE
+  </div>
+
+  <!-- 页脚 -->
+  <div class="rule bot"></div>
+  <div class="barcode fade"></div>
+  <div class="barcode-no fade">9 787539 492017</div>
+  <div class="spec fade">210×297MM <span class="cy">/</span> 300DPI <span class="cy">/</span> CMYK-READY</div>
+  <div class="red-sq fade">↗</div>
+
+  <!-- 全局纹理 -->
+  <div class="tex-noise"></div>
+  <div class="tex-scan"></div>
+  <div class="tex-beam"></div>
+  <div class="tex-vig"></div>
+</div>
+
+<div class="hint"><b>SPACE / 点击画面</b> = GLITCH 脉冲 &nbsp;·&nbsp; <b>P</b> = 导出 A4 PDF &nbsp;·&nbsp; 鼠标移动有视差</div>
+
+<script>
+/* ---------- 自适应缩放 ---------- */
+const stage = document.getElementById("stage");
+function fit() {
+  const s = Math.min((innerWidth - 32) / 1080, (innerHeight - 60) / 1527);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+}
+fit(); addEventListener("resize", fit);
+
+/* ---------- 入场：幕布 + 逐层浮现 ---------- */
+const boot = document.getElementById("boot");
+if (location.search.includes("noboot")) {
+  // 调试模式：跳过开场动画（供截图 / 预览用）
+  boot.classList.add("off");
+  document.querySelectorAll(".fade").forEach(el => el.classList.add("in"));
+} else {
+  setTimeout(() => {
+    boot.classList.add("off");
+    document.querySelectorAll(".fade").forEach((el, i) =>
+      setTimeout(() => el.classList.add("in"), 200 + i * 80));
+  }, 900);
+}
+
+/* ---------- 故障脉冲 ---------- */
+const strips = document.querySelectorAll(".strip");
+function burst() {
+  // 每次随机化故障条的位置与宽度
+  strips.forEach(s => {
+    s.style.top = (Math.random() * 92 + 2) + "%";
+    s.style.left = (Math.random() * 25) + "%";
+    s.style.width = (45 + Math.random() * 50) + "%";
+  });
+  stage.classList.remove("burst");
+  void stage.offsetWidth;           // 重启动画
+  stage.classList.add("burst");
+  clearTimeout(burst._t);
+  burst._t = setTimeout(() => stage.classList.remove("burst"), 500);
+}
+setInterval(burst, 6500);
+addEventListener("keydown", e => {
+  if (e.code === "Space") { e.preventDefault(); burst(); }
+  if (e.key.toLowerCase() === "p") window.print();
+});
+stage.addEventListener("click", burst);
+
+/* ---------- 鼠标视差 ---------- */
+let mx = 0, my = 0;
+addEventListener("mousemove", e => {
+  mx = e.clientX / innerWidth - 0.5;
+  my = e.clientY / innerHeight - 0.5;
+});
+(function loop() {
+  document.querySelectorAll("[data-depth]").forEach(el => {
+    const d = +el.dataset.depth;
+    el.style.translate = `${-mx * d * 2.2}px ${-my * d * 2.2}px`;
+  });
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
